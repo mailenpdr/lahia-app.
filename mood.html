@@ -17,89 +17,139 @@
         body {
             background-color: var(--crema);
             font-family: 'VT323', monospace;
-            margin: 0; padding: 0;
-            height: 100dvh;
+            margin: 0; padding-bottom: 120px;
             color: var(--cafe);
             text-align: center;
-            overflow: hidden;
-            touch-action: none; /* Bloqueo total de gestos del sistema */
-            -webkit-user-select: none; /* Evita que se seleccione texto al tocar */
         }
 
-        .header-mood { padding: 10px; background: white; border-bottom: 4px solid var(--fresa); height: 80px; }
-        
+        .header-mood {
+            padding: 20px;
+            background: white;
+            border-bottom: 5px solid var(--fresa);
+        }
+
         #user-indicator {
-            display: inline-block; padding: 4px 12px;
-            background: var(--fresa); border-radius: 20px; color: white; font-size: 1rem;
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 15px;
+            background: var(--fresa);
+            border-radius: 20px;
+            color: white;
+            font-size: 1.5rem;
         }
 
         .jars-container {
-            display: flex; justify-content: center; gap: 10px; padding: 10px 5px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
         }
 
+        .jar-wrapper { display: flex; flex-direction: column; align-items: center; }
+
         .jar {
-            width: 120px; height: 160px; border: 4px solid var(--cafe);
-            border-radius: 15px 15px 40% 40%; background: rgba(255, 255, 255, 0.9);
-            display: flex; flex-wrap: wrap-reverse;
-            align-content: flex-start; padding: 8px; gap: 4px;
-            box-shadow: inset 5px 0 10px rgba(0,0,0,0.05);
+            width: 140px;
+            height: 200px;
+            border: 4px solid var(--cafe);
+            border-radius: 15px 15px 45% 45%;
+            background: rgba(255, 255, 255, 0.7);
+            position: relative;
+            display: flex;
+            flex-wrap: wrap-reverse;
+            align-content: flex-start;
+            padding: 15px;
+            gap: 6px;
+            box-shadow: inset 8px 0 15px rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Efecto cuando una bolita está seleccionada esperando al frasco */
+        .jar.waiting {
+            border: 4px dashed var(--fresa-fuerte);
+            background: rgba(255, 77, 109, 0.1);
+            transform: scale(1.05);
         }
 
         .jar-label { 
-            margin-top: 5px; font-size: 1.1rem; background: var(--cafe); 
-            color: white; padding: 2px 10px; border-radius: 5px;
+            margin-top: 10px; 
+            font-size: 1.8rem; 
+            background: var(--cafe); 
+            color: white; 
+            padding: 2px 15px; 
+            border-radius: 5px;
         }
 
         .mood-bank {
-            background: white; margin: 10px auto; width: 90%;
-            padding: 10px; border: 3px solid var(--cafe);
-            box-shadow: 5px 5px 0px var(--fresa); border-radius: 10px;
+            background: white;
+            margin: 15px auto;
+            max-width: 400px;
+            padding: 15px;
+            border: 3px solid var(--cafe);
+            box-shadow: 6px 6px 0px var(--fresa);
+            border-radius: 10px;
         }
 
         .bank-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 10px; margin-top: 5px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
         }
 
-        .ball-item { display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
+        .ball-item { display: flex; flex-direction: column; align-items: center; font-size: 1.1rem; }
 
         .mood-ball {
-            width: 35px; height: 35px; border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
             border: 2px solid rgba(0,0,0,0.1);
-            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        /* COLORES */
+        .mood-ball.selected {
+            transform: scale(1.3);
+            border: 3px solid var(--cafe);
+            box-shadow: 0 0 10px var(--fresa-fuerte);
+        }
+
+        /* Colores Originales + Nuevos */
         .m-feliz { background: #ffeb3b; }
         .m-amor { background: #ff4081; }
-        .m-textraño { background: #f06292; }
-        .m-verte { background: #ff9800; }
+        .m-extraño { background: #9c27b0; }
+        .m-cansado { background: #b0bec5; }
         .m-hablar { background: #4caf50; }
+        .m-verte { background: #ff9800; }
         .m-triste { background: #2196f3; }
-        .m-enojo { background: #f44336; }
-        .m-ansiedad { background: #8d6e63; }
+        .m-textraño { background: #f06292; }
 
         .btn-clear {
-            background: var(--fresa-fuerte); color: white;
-            border: 3px solid var(--cafe); padding: 8px;
-            font-family: 'VT323'; font-size: 1.1rem;
-            width: 60%; margin-top: 5px;
+            background: var(--fresa-fuerte);
+            color: white;
+            border: 3px solid var(--cafe);
+            padding: 10px 20px;
+            font-family: 'VT323';
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--cafe);
+            margin-top: 20px;
         }
 
         .pixel-nav {
-            position: fixed; bottom: 15px; left: 50%;
+            position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%); width: 85%;
-            background: white; border: 3px solid var(--cafe);
+            background: white; border: 4px solid var(--cafe);
             display: flex; justify-content: space-around;
-            padding: 8px 0; z-index: 2000;
+            padding: 10px 0; box-shadow: 6px 6px 0px var(--cafe);
         }
-        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 0.8rem; }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
     <div class="header-mood">
-        <h1>FRASCOS MÁGICOS ✨</h1>
+        <h1 style="font-size: 2.5rem; margin:0;">FRASCOS DE SENTIMIENTOS</h1>
         <span id="user-indicator">Cargando...</span>
     </div>
 
@@ -109,26 +159,26 @@
             <div class="jar-label">LALO</div>
         </div>
         <div class="jar-wrapper">
-            <div id="jar-mia" class="jar"></div>
+            <div id="jar-mahia" class="jar"></div>
             <div class="jar-label">MAHIA</div>
         </div>
     </div>
 
     <div class="mood-bank">
-        <span>Toca y arrastra al frasco:</span>
+        <span style="font-size: 1.4rem;">1. Toca un sentimiento:</span>
         <div class="bank-grid">
             <div class="ball-item"><div class="mood-ball m-feliz" id="feliz"></div><span>Feliz</span></div>
             <div class="ball-item"><div class="mood-ball m-amor" id="amor"></div><span>Amor</span></div>
             <div class="ball-item"><div class="mood-ball m-textraño" id="textraño"></div><span>Extraño</span></div>
             <div class="ball-item"><div class="mood-ball m-verte" id="verte"></div><span>Verte</span></div>
             <div class="ball-item"><div class="mood-ball m-hablar" id="hablar"></div><span>Hablar</span></div>
+            <div class="ball-item"><div class="mood-ball m-cansado" id="cansado"></div><span>Cansado</span></div>
             <div class="ball-item"><div class="mood-ball m-triste" id="triste"></div><span>Triste</span></div>
-            <div class="ball-item"><div class="mood-ball m-enojo" id="enojo"></div><span>Enojo</span></div>
-            <div class="ball-item"><div class="mood-ball m-ansiedad" id="ansiedad"></div><span>Ansia</span></div>
+            <div class="ball-item"><div class="mood-ball m-extraño" id="extraño"></div><span>Miedo</span></div>
         </div>
     </div>
 
-    <button class="btn-clear" onclick="confirmarLimpieza()">LIMPIAR MI FRASCO</button>
+    <button class="btn-clear" onclick="confirmarLimpieza()">LIMPIAR MI FRASCO ✨</button>
 
     <nav class="pixel-nav">
         <a href="dashboard.html">🏠 INICIO</a>
@@ -140,112 +190,103 @@
         import { db } from './firebase-config.js';
         import { doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const userRaw = localStorage.getItem('usuarioActual') || 'invitado';
-        const currentProfile = userRaw.toLowerCase().includes('mahia') || userRaw.toLowerCase() === 'mia' ? 'mia' : 'lalo';
+        // --- SISTEMA DE IDENTIFICACIÓN ---
+        const userRaw = localStorage.getItem('usuarioActual') || 'Invitado';
+        const currentProfile = userRaw.toLowerCase().includes('mahia') ? 'mahia' : 'lalo';
         document.getElementById('user-indicator').innerText = `PERFIL: ${currentProfile.toUpperCase()}`;
 
+        let selectedMood = null;
+
+        // 1. CLICK EN LA BOLITA
         const balls = document.querySelectorAll('.mood-ball');
-        let activeBall = null;
-        let clone = null;
-
         balls.forEach(ball => {
-            ball.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                activeBall = this;
+            ball.onclick = () => {
+                // Quitar seleccion previa
+                balls.forEach(b => b.classList.remove('selected'));
+                // Seleccionar nueva
+                ball.classList.add('selected');
+                selectedMood = ball.id;
                 
-                // Creamos un clon visual para arrastrarlo sin mover el original de la cuadrícula
-                clone = this.cloneNode(true);
-                clone.style.position = 'fixed';
-                clone.style.width = '40px';
-                clone.style.height = '40px';
-                clone.style.pointerEvents = 'none'; // Importante para que no bloquee la detección
-                clone.style.zIndex = '3000';
-                document.body.appendChild(clone);
+                // Marcar el frasco propio para guiar al usuario
+                document.getElementById(`jar-${currentProfile}`).classList.add('waiting');
                 
-                const touch = e.touches[0];
-                updatePos(touch.clientX, touch.clientY);
-            }, {passive: false});
-
-            ball.addEventListener('touchmove', function(e) {
-                if (!clone) return;
-                e.preventDefault();
-                const touch = e.touches[0];
-                updatePos(touch.clientX, touch.clientY);
-            }, {passive: false});
-
-            ball.addEventListener('touchend', async function(e) {
-                if (!clone) return;
-                
-                const touch = e.changedTouches[0];
-                const x = touch.clientX;
-                const y = touch.clientY;
-
-                // Obtenemos el frasco de Mahia y el de Lalo
-                const jarMia = document.getElementById('jar-mia').getBoundingClientRect();
-                const jarLalo = document.getElementById('jar-lalo').getBoundingClientRect();
-
-                let target = null;
-                // Verificamos si soltamos dentro del área de Mahia
-                if (x >= jarMia.left && x <= jarMia.right && y >= jarMia.top && y <= jarMia.bottom) {
-                    target = 'mia';
-                } 
-                // O dentro del área de Lalo
-                else if (x >= jarLalo.left && x <= jarLalo.right && y >= jarLalo.top && y <= jarLalo.bottom) {
-                    target = 'lalo';
-                }
-
-                if (target) {
-                    if (target === currentProfile) {
-                        const moodType = activeBall.id;
-                        await setDoc(doc(db, `moods_${currentProfile}`, Date.now().toString()), {
-                            type: moodType,
-                            timestamp: Date.now()
-                        });
-                    } else {
-                        Swal.fire({ title: '¡Ups!', text: '¡Ese frasco es ajeno! ❤️', icon: 'error', timer: 1500, showConfirmButton: false });
-                    }
-                }
-
-                document.body.removeChild(clone);
-                clone = null;
-                activeBall = null;
-            });
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'info', title: 'Ahora toca tu frasco' });
+            };
         });
 
-        function updatePos(x, y) {
-            clone.style.left = (x - 20) + 'px';
-            clone.style.top = (y - 20) + 'px';
-        }
+        // 2. CLICK EN EL FRASCO
+        const jars = document.querySelectorAll('.jar');
+        jars.forEach(jar => {
+            jar.onclick = async () => {
+                if (!selectedMood) {
+                    Swal.fire({ title: '¡Primero elige una bolita!', icon: 'warning', confirmButtonColor: '#ff4d6d' });
+                    return;
+                }
 
+                const targetId = jar.id; // "jar-lalo" o "jar-mahia"
+
+                // SEGURIDAD: Solo puedes meter en el tuyo
+                if (targetId !== `jar-${currentProfile}`) {
+                    Swal.fire({
+                        title: '¡ALTO AHÍ!',
+                        text: 'Ese no es tu frasco. Pon tus sentimientos en el tuyo ❤️',
+                        icon: 'error',
+                        confirmButtonColor: '#ff4d6d'
+                    });
+                    return;
+                }
+
+                // Guardar en Firebase
+                const moodId = Date.now().toString();
+                await setDoc(doc(db, `moods_${currentProfile}`, moodId), {
+                    type: selectedMood,
+                    timestamp: Date.now()
+                });
+
+                // Limpiar selección
+                selectedMood = null;
+                balls.forEach(b => b.classList.remove('selected'));
+                jars.forEach(j => j.classList.remove('waiting'));
+            };
+        });
+
+        // 3. RENDERIZADO (VER BOLITAS)
         function cargarFrasco(perfil) {
             onSnapshot(collection(db, `moods_${perfil}`), (snapshot) => {
                 const jar = document.getElementById(`jar-${perfil}`);
                 jar.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    const b = document.createElement('div');
-                    b.className = `mood-ball m-${data.type}`;
-                    b.style.width = '22px'; b.style.height = '22px';
-                    jar.appendChild(b);
+                    const ball = document.createElement('div');
+                    ball.className = `mood-ball m-${data.type}`;
+                    ball.style.width = '25px';
+                    ball.style.height = '25px';
+                    jar.appendChild(ball);
                 });
             });
         }
 
         window.confirmarLimpieza = () => {
             Swal.fire({
-                title: '¿Vaciar?',
+                title: '¿Vaciar tu frasco?',
+                text: "Se borrarán tus bolitas.",
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ff4d6d'
+                confirmButtonColor: '#ff4d6d',
+                confirmButtonText: 'Sí, vaciar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     const snap = await getDocs(collection(db, `moods_${currentProfile}`));
-                    snap.docs.forEach(d => deleteDoc(doc(db, `moods_${currentProfile}`, d.id)));
+                    const p = snap.docs.map(d => deleteDoc(doc(db, `moods_${currentProfile}`, d.id)));
+                    await Promise.all(p);
+                    Swal.fire('¡Listo!', 'Frasco vacío', 'success');
                 }
             });
         };
 
         cargarFrasco('lalo');
-        cargarFrasco('mia');
+        cargarFrasco('mahia');
     </script>
 </body>
 </html>

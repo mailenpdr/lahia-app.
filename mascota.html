@@ -3,230 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lalhia-Chi: Tamagotchi Mágico</title>
+    <title>Lalhia-Chi ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --p-accent: #ff4d6d;
             --p-cafe: #5d4037;
+            --p-rosa: #ffb3c1;
             --borde: 4px solid var(--p-cafe);
             --sombra: 6px 6px 0px var(--p-cafe);
         }
 
         body { 
             background-color: #fffcfc;
-            background-image: radial-gradient(#ffd4dd 1.5px, transparent 1.5px);
+            background-image: radial-gradient(var(--p-rosa) 1.5px, transparent 1.5px);
             background-size: 30px 30px;
             font-family: 'VT323', monospace;
             margin: 0; overflow: hidden; height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            touch-action: none; /* Bloquea gestos del sistema para que el juego fluya */
+            touch-action: manipulation;
         }
         
+        /* --- CONSOLA --- */
         .console-frame {
             background: white; border: var(--borde); box-shadow: var(--sombra);
-            width: 90%; max-width: 350px; height: 70vh; margin-top: 15px;
+            width: 85%; max-width: 320px; height: 65vh; margin-top: 20px;
             display: flex; flex-direction: column; position: relative;
+            border-radius: 20px;
         }
 
-        #stage { 
-            background: #fdf2f4; border: 3px dashed var(--p-cafe);
+        .screen { 
+            background: #fdf2f4; border: 3px solid var(--p-cafe);
             margin: 10px; flex-grow: 1; position: relative; overflow: hidden;
+            border-radius: 10px;
         }
+
+        /* --- BARRAS --- */
+        .status-panel { padding: 10px; border-bottom: var(--borde); }
+        .bar-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+        .bar-label { font-size: 1.2rem; font-weight: bold; width: 60px; }
+        .bar-bg { background: #ddd; border: 2px solid var(--p-cafe); width: 120px; height: 12px; border-radius: 5px; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.5s ease-in-out; }
+        #fill-hambre { background: #ffa726; }
+        #fill-amor { background: var(--p-accent); }
 
         /* --- GATITO --- */
         #petContainer {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            width: 140px; height: 140px; cursor: pointer; z-index: 5;
+            width: 150px; height: 150px; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .pet-avatar { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+
+        /* --- MENÚ DE COMIDA --- */
+        .items-menu {
+            display: flex; justify-content: center; gap: 15px;
+            padding: 10px; background: #fff0f3; border-top: var(--borde);
+        }
+        .item-btn {
+            font-size: 2rem; background: white; border: 2px solid var(--p-cafe);
+            padding: 5px; border-radius: 10px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 3px 3px 0px var(--p-cafe);
+        }
+        .item-btn.selected {
+            background: var(--p-rosa);
+            transform: translateY(-5px);
+            box-shadow: 0px 5px 0px var(--p-cafe);
+            border-color: var(--p-accent);
         }
 
-        .pet-avatar { 
-            width: 100%; height: 100%; object-fit: contain;
-            image-rendering: pixelated;
-        }
-
-        /* --- OBJETOS --- */
-        .items-side {
-            position: absolute; right: 10px; top: 10px;
-            display: flex; flex-direction: column; gap: 10px; z-index: 20;
-        }
-        .drag-item {
-            font-size: 2.2rem; touch-action: none; cursor: grab;
-            user-select: none; -webkit-user-select: none;
-        }
-
-        /* --- BARRAS DE ESTADO --- */
-        .status-area { padding: 10px; border-bottom: var(--borde); font-size: 1.1rem; }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .bar-bg { background: #eee; border: 2px solid var(--p-cafe); width: 100px; height: 12px; }
-        .bar-fill { height: 100%; transition: 0.3s; }
-        #fill-hambre { background: #ff9800; } /* Naranja */
-        #fill-felicidad { background: var(--p-accent); } /* Rosa */
-
-        .nav-menu {
+        /* --- NAV --- */
+        .nav-bar {
             position: fixed; bottom: 15px; width: 90%; max-width: 350px;
-            height: 70px; background: white; border: var(--borde);
-            box-shadow: var(--sombra); display: flex; justify-content: space-around; align-items: center;
+            background: white; border: var(--borde); box-shadow: var(--sombra);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            border-radius: 15px;
         }
-        .nav-item { text-decoration: none; text-align: center; color: var(--p-cafe); }
-        .nav-item span { font-size: 0.8rem; font-weight: bold; }
+        .nav-link { text-decoration: none; color: var(--p-cafe); text-align: center; font-size: 1rem; font-weight: bold; }
 
+        /* Globito de habla */
         .bubble {
-            background: white; border: 2px solid var(--p-cafe); padding: 2px 8px;
-            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-            display: none; white-space: nowrap; z-index: 100; font-size: 1.2rem;
+            background: white; border: 2px solid var(--p-cafe); padding: 5px 10px;
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            display: none; border-radius: 10px; z-index: 10; font-size: 1.2rem;
         }
 
+        /* Animaciones */
         .jump { animation: jumpAnim 0.4s ease; }
         @keyframes jumpAnim {
             0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-25px); }
+            50% { transform: translateX(-50%) translateY(-20px); }
         }
     </style>
 </head>
 <body>
 
     <div class="console-frame">
-        <div class="status-area">
-            <div class="stat-row">
-                <span>HAMBRE:</span>
-                <div class="bar-bg"><div id="fill-hambre" class="bar-fill" style="width: 100%;"></div></div>
+        <div class="status-panel">
+            <div class="bar-container">
+                <span class="bar-label">PANZA:</span>
+                <div class="bar-bg"><div id="fill-hambre" class="bar-fill"></div></div>
             </div>
-            <div class="stat-row">
-                <span>AMOR:</span>
-                <div class="bar-bg"><div id="fill-felicidad" class="bar-fill" style="width: 100%;"></div></div>
+            <div class="bar-container">
+                <span class="bar-label">AMOR:</span>
+                <div class="bar-bg"><div id="fill-amor" class="bar-fill"></div></div>
             </div>
         </div>
 
-        <div id="stage">
-            <div class="items-side">
-                <div class="drag-item" id="fish">🐟</div>
-                <div class="drag-item" id="water">💧</div>
-                <div class="drag-item" id="candy">🍬</div>
-            </div>
-
-            <div id="petContainer" onclick="tocar()">
+        <div class="screen">
+            <div id="petContainer" onclick="interactuarConGato()">
                 <div id="bubble" class="bubble"></div>
                 <img id="petImg" class="pet-avatar" src="gato4.png">
             </div>
         </div>
+
+        <div class="items-menu">
+            <div class="item-btn" onclick="seleccionarItem('fish', this)">🐟</div>
+            <div class="item-btn" onclick="seleccionarItem('water', this)">💧</div>
+            <div class="item-btn" onclick="seleccionarItem('candy', this)">🍬</div>
+        </div>
     </div>
 
-    <nav class="nav-menu">
-        <a href="dashboard.html" class="nav-item">🏠<br><span>INICIO</span></a>
-        <a href="mood.html" class="nav-item">🌈<br><span>MOOD</span></a>
-        <a href="ajustes.html" class="nav-item">⚙️<br><span>AJUSTES</span></a>
+    <nav class="nav-bar">
+        <a href="dashboard.html" class="nav-link">🏠 INICIO</a>
+        <a href="mood.html" class="nav-link">🌈 MOOD</a>
+        <a href="ajustes.html" class="nav-link">⚙️ AJUSTES</a>
     </nav>
 
     <script>
         const pet = document.getElementById('petImg');
         const container = document.getElementById('petContainer');
         const barHambre = document.getElementById('fill-hambre');
-        const barFelicidad = document.getElementById('fill-felicidad');
+        const barAmor = document.getElementById('fill-amor');
         const bub = document.getElementById('bubble');
         
         let hambre = 100;
-        let felicidad = 100;
+        let amor = 100;
+        let itemSeleccionado = null;
 
-        // --- SISTEMA DE DESGASTE ---
+        // --- SISTEMA DE TIEMPO (Baja cada 10 minutos aprox) ---
+        // Para que veas el cambio, baja 1% cada 10 segundos (ajústalo si quieres más lento)
         setInterval(() => {
-            // Baja el hambre
             hambre = Math.max(0, hambre - 1);
-            barHambre.style.width = hambre + "%";
+            amor = Math.max(0, amor - 1);
+            actualizarBarras();
             
-            // Baja la felicidad (un poco más lento)
-            felicidad = Math.max(0, felicidad - 0.5);
-            barFelicidad.style.width = felicidad + "%";
-
-            // Cambios de estado según barras
-            if (hambre < 30 || felicidad < 30) {
-                actualizarGato(1); // Triste
-            } else if (hambre > 90 && felicidad > 90) {
-                actualizarGato(2); // Durmiendo de felicidad/lleno
+            // Si tiene hambre/está triste
+            if (hambre < 25 || amor < 25) {
+                actualizarGato(1);
             }
-        }, 3000);
+        }, 10000); 
+
+        function actualizarBarras() {
+            barHambre.style.width = hambre + "%";
+            barAmor.style.width = amor + "%";
+        }
 
         function actualizarGato(num) {
             pet.src = `gato${num}.png`;
-        }
-
-        // --- CARIÑO (CLICK) ---
-        function tocar() {
-            container.classList.add('jump');
-            setTimeout(() => container.classList.remove('jump'), 400);
-            
-            felicidad = Math.min(100, felicidad + 10);
-            barFelicidad.style.width = felicidad + "%";
-            
-            if (hambre > 30) {
-                const felizRandom = Math.floor(Math.random() * (7 - 4 + 1)) + 4;
-                actualizarGato(felizRandom);
-                hablar("¡Purrr! ❤️");
-            } else {
-                hablar("Tengo hambre..😿");
-            }
-        }
-
-        // --- LÓGICA ARRASTRE PARA CELULAR ---
-        const items = document.querySelectorAll('.drag-item');
-        let activeItem = null;
-        let startPos = { x: 0, y: 0 };
-
-        items.forEach(item => {
-            item.addEventListener('touchstart', (e) => {
-                activeItem = item;
-                const touch = e.touches[0];
-                const rect = item.getBoundingClientRect();
-                startPos = { x: rect.left, y: rect.top };
-                
-                item.style.position = 'fixed';
-                item.style.zIndex = '1000';
-                moveAt(touch.clientX, touch.clientY);
-            }, {passive: false});
-
-            item.addEventListener('touchmove', (e) => {
-                if (!activeItem) return;
-                e.preventDefault();
-                const touch = e.touches[0];
-                moveAt(touch.clientX, touch.clientY);
-            }, {passive: false});
-
-            item.addEventListener('touchend', (e) => {
-                if (!activeItem) return;
-                
-                const touch = e.changedTouches[0];
-                const petRect = container.getBoundingClientRect();
-
-                // ¿Soltamos la comida sobre el gato?
-                if (touch.clientX >= petRect.left && touch.clientX <= petRect.right &&
-                    touch.clientY >= petRect.top && touch.clientY <= petRect.bottom) {
-                    
-                    alimentar();
-                }
-
-                // Resetear item
-                activeItem.style.position = 'static';
-                activeItem = null;
-            });
-        });
-
-        function moveAt(x, y) {
-            activeItem.style.left = (x - 20) + 'px';
-            activeItem.style.top = (y - 20) + 'px';
-        }
-
-        function alimentar() {
-            hambre = Math.min(100, hambre + 25);
-            barHambre.style.width = hambre + "%";
-            
-            actualizarGato(3); // Comiendo
-            hablar("¡Ñam! ✨");
-            
-            setTimeout(() => {
-                if (hambre > 85) actualizarGato(2);
-                else actualizarGato(4);
-            }, 1500);
         }
 
         function hablar(txt) {
@@ -234,6 +169,59 @@
             bub.style.display = "block";
             setTimeout(() => bub.style.display = "none", 2000);
         }
+
+        // 1. SELECCIONAR COMIDA
+        function seleccionarItem(tipo, elemento) {
+            // Quitar clase a otros
+            document.querySelectorAll('.item-btn').forEach(b => b.classList.remove('selected'));
+            
+            if (itemSeleccionado === tipo) {
+                itemSeleccionado = null;
+            } else {
+                itemSeleccionado = tipo;
+                elemento.classList.add('selected');
+                hablar("¡Dáselo al gato!");
+            }
+        }
+
+        // 2. TOCAR AL GATO (Para comer o dar cariño)
+        function interactuarConGato() {
+            container.classList.add('jump');
+            setTimeout(() => container.classList.remove('jump'), 400);
+
+            if (itemSeleccionado) {
+                // ACCIÓN: COMER
+                hambre = Math.min(100, hambre + 30);
+                actualizarGato(3); // Imagen de comer
+                hablar("¡ÑAM ÑAM! ✨");
+                
+                // Deseleccionar
+                itemSeleccionado = null;
+                document.querySelectorAll('.item-btn').forEach(b => b.classList.remove('selected'));
+                
+                setTimeout(() => {
+                    if (hambre > 80) actualizarGato(2); // Dormir si está lleno
+                    else actualizarGato(4);
+                }, 2000);
+
+            } else {
+                // ACCIÓN: CARIÑO
+                amor = Math.min(100, amor + 15);
+                if (hambre < 30) {
+                    actualizarGato(1);
+                    hablar("Tengo hambre... 😿");
+                } else {
+                    // Ponemos un gato feliz aleatorio (4 al 7)
+                    const randomFeliz = Math.floor(Math.random() * 4) + 4;
+                    actualizarGato(randomFeliz);
+                    hablar("¡Miau! ❤️");
+                }
+            }
+            actualizarBarras();
+        }
+
+        // Iniciar barras
+        actualizarBarras();
     </script>
 </body>
 </html>

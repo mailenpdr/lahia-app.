@@ -15,105 +15,117 @@
             --sombra-pixel: 6px 6px 0px var(--cafe-dark);
         }
 
+        /* Cambiamos 100vh por 100dvh para que el teclado no rompa el diseño */
         body {
             background-color: var(--cream-bg);
             background-image: radial-gradient(var(--grid-dot) 1.5px, transparent 1.5px);
             background-size: 30px 30px;
             font-family: 'Quicksand', sans-serif;
             margin: 0; padding: 0;
-            height: 100vh; overflow: hidden;
+            height: 100dvh; 
             display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; /* Evita scrolls raros en el fondo */
         }
 
-        /* --- TITULO ESTILO DASH --- */
         .dash-header {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
+            flex-shrink: 0; /* Evita que el título se aplaste */
         }
         .pixel-title {
             font-family: 'VT323', monospace;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             color: var(--pink-accent);
             text-transform: uppercase;
             margin: 0;
         }
 
-        /* --- CONTENEDOR TIPO "CUADRO DEL DASHBOARD" --- */
-        /* Aquí es donde flotarán las notas, como si fuera el cuadro del gatito */
+        /* CUADRO PRINCIPAL */
         .main-frame {
             position: relative;
-            width: 85%;
-            flex: 1;
-            margin: 20px 0 110px 0; /* Espacio para el menú abajo */
+            width: 88%;
+            flex-grow: 1; /* Ocupa el espacio disponible */
+            margin: 15px 0 100px 0; 
             background: white;
             border: var(--borde-pixel);
             box-shadow: var(--sombra-pixel);
-            overflow: hidden; /* Para que las nubes no se salgan del cuadro */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- LAS NUBECITAS --- */
+        #cielo-notas {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+        }
+
         .nube-nota {
             position: absolute;
             background: white;
-            border: 3px solid var(--cafe-dark);
-            border-radius: 20px;
-            padding: 10px 15px;
-            max-width: 120px;
-            font-size: 0.85rem;
+            border: 2px solid var(--cafe-dark);
+            border-radius: 15px;
+            padding: 8px 12px;
+            max-width: 100px;
+            font-size: 0.75rem;
             color: var(--cafe-dark);
             box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
             animation: flotar 4s ease-in-out infinite alternate;
             word-wrap: break-word;
+            z-index: 1;
         }
 
         .nube-nota b {
             display: block;
             font-family: 'VT323', monospace;
             color: var(--pink-accent);
-            font-size: 1rem;
+            font-size: 0.9rem;
             border-bottom: 1px solid #eee;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         @keyframes flotar {
             from { transform: translateY(0px) rotate(-1deg); }
-            to { transform: translateY(-10px) rotate(1deg); }
+            to { transform: translateY(-8px) rotate(1deg); }
         }
 
-        /* --- INPUT (DENTRO DEL ESTILO) --- */
+        /* INPUT BOX - ARREGLADO PARA CELULAR */
         .input-box {
-            position: absolute;
-            bottom: 10px;
-            left: 5%;
-            width: 90%;
+            background: white;
+            border-top: 2px solid #eee;
+            padding: 10px;
             display: flex;
             gap: 5px;
+            z-index: 10; /* Siempre encima de las nubes */
         }
 
         .pixel-input {
             flex: 1;
             border: 3px solid var(--cafe-dark);
-            padding: 8px;
+            padding: 10px;
             font-family: 'Quicksand', sans-serif;
-            font-size: 0.8rem;
+            font-size: 16px; /* 16px evita que iOS haga zoom automático al escribir */
             outline: none;
+            border-radius: 0;
+            -webkit-appearance: none;
         }
 
         .btn-enviar {
             background: var(--pink-accent);
             border: 3px solid var(--cafe-dark);
             color: white;
-            padding: 0 10px;
+            padding: 0 15px;
             cursor: pointer;
             font-family: 'VT323', monospace;
+            font-size: 1.2rem;
         }
 
-        /* --- MENU INFERIOR (EL DE TU IMAGEN) --- */
+        /* NAV MENU */
         .nav-menu {
             position: fixed;
-            bottom: 20px;
+            bottom: 15px;
             width: 90%;
-            height: 70px;
+            height: 65px;
             background: white;
             border: var(--borde-pixel);
             box-shadow: var(--sombra-pixel);
@@ -126,18 +138,16 @@
         .nav-item {
             text-decoration: none;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        .nav-icon { font-size: 1.4rem; }
+        .nav-icon { font-size: 1.3rem; display: block; }
         .nav-label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             color: var(--cafe-dark);
+            text-transform: uppercase;
         }
-        .active { color: var(--pink-accent); }
+        .active-label { color: var(--pink-accent); }
 
     </style>
 </head>
@@ -147,12 +157,11 @@
         <h1 class="pixel-title">¡NOTITAS MÁGICAS! ✨</h1>
     </div>
 
-    <div class="main-frame" id="contenedorPrincipal">
-        <div id="cielo-notas">
-            </div>
+    <div class="main-frame">
+        <div id="cielo-notas"></div>
 
         <div class="input-box">
-            <input type="text" id="notaTxt" class="pixel-input" placeholder="Sube una nube...">
+            <input type="text" id="notaTxt" class="pixel-input" placeholder="Escribe algo aquí...">
             <button id="btnSubir" class="btn-enviar">OK</button>
         </div>
     </div>
@@ -160,7 +169,7 @@
     <nav class="nav-menu">
         <a href="dashboard.html" class="nav-item">
             <span class="nav-icon">🏠</span>
-            <span class="nav-label active">INICIO</span>
+            <span class="nav-label active-label">INICIO</span>
         </a>
         <a href="mood.html" class="nav-item">
             <span class="nav-icon">🌈</span>
@@ -179,15 +188,15 @@
         const cielo = document.getElementById('cielo-notas');
         const input = document.getElementById('notaTxt');
         const btn = document.getElementById('btnSubir');
-        const usuario = localStorage.getItem('usuarioActual') || 'Mahia';
+        const usuario = localStorage.getItem('usuarioActual') || 'Invitado';
 
         function crearNube(nota) {
             const nube = document.createElement('div');
             nube.className = 'nube-nota';
             
-            // Posiciones aleatorias DENTRO del cuadro
-            const x = Math.random() * 60; // Porcentaje
-            const y = Math.random() * 60; // Porcentaje
+            // Posiciones aleatorias un poco más centradas para evitar que se corten
+            const x = Math.max(5, Math.min(Math.random() * 70, 70)); 
+            const y = Math.max(5, Math.min(Math.random() * 70, 70)); 
             
             nube.style.left = x + '%';
             nube.style.top = y + '%';
@@ -197,21 +206,35 @@
             cielo.appendChild(nube);
         }
 
-        const q = query(collection(db, "notas"), orderBy("fecha", "desc"), limit(8));
+        const q = query(collection(db, "notas"), orderBy("fecha", "desc"), limit(10));
         onSnapshot(q, (snapshot) => {
             cielo.innerHTML = '';
             snapshot.forEach(doc => crearNube(doc.data()));
         });
 
         btn.onclick = async () => {
-            if(!input.value.trim()) return;
-            await addDoc(collection(db, "notas"), {
-                texto: input.value,
-                autor: usuario,
-                fecha: serverTimestamp()
-            });
-            input.value = '';
+            const texto = input.value.trim();
+            if(!texto) return;
+            
+            input.disabled = true; // Evita doble envío
+            try {
+                await addDoc(collection(db, "notas"), {
+                    texto: texto,
+                    autor: usuario,
+                    fecha: serverTimestamp()
+                });
+                input.value = '';
+            } catch (e) {
+                console.error("Error al subir:", e);
+            }
+            input.disabled = false;
+            input.focus();
         };
+
+        // Enviar con la tecla Enter del teclado del cel
+        input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") btn.click();
+        });
     </script>
 </body>
 </html>

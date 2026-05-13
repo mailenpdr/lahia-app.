@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lalhia - Mood Jars</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --fresa: #ffb3c1;
+            --fresa-fuerte: #ff4d6d;
+            --crema: #fffaff;
+            --cafe: #5d4037;
+        }
+
+        body {
+            background-color: var(--crema);
+            font-family: 'VT323', monospace;
+            margin: 0; padding-bottom: 120px;
+            color: var(--cafe);
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .header-mood {
+            padding: 20px;
+            background: white;
+            border-bottom: 5px solid var(--fresa);
+        }
+
+        #user-indicator {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 15px;
+            background: var(--fresa);
+            border-radius: 20px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .jars-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .jar-wrapper { display: flex; flex-direction: column; align-items: center; }
+
+        .jar {
+            width: 140px;
+            height: 200px;
+            border: 4px solid var(--cafe);
+            border-radius: 15px 15px 45% 45%;
+            background: rgba(255, 255, 255, 0.7);
+            position: relative;
+            display: flex;
+            flex-wrap: wrap-reverse;
+            align-content: flex-start;
+            padding: 15px;
+            gap: 6px;
+            box-shadow: inset 8px 0 15px rgba(255,255,255,0.8);
+        }
+
+        /* Efecto de brillo al arrastrar sobre el frasco */
+        .jar.drag-over {
+            background: rgba(255, 179, 193, 0.3);
+            border-style: dashed;
+        }
+
+        .jar-label { 
+            margin-top: 10px; 
+            font-size: 1.5rem; 
+            background: var(--cafe); 
+            color: white; 
+            padding: 2px 15px; 
+            border-radius: 5px;
+        }
+
+        .mood-bank {
+            background: white;
+            margin: 15px auto;
+            max-width: 400px;
+            padding: 15px;
+            border: 3px solid var(--cafe);
+            box-shadow: 6px 6px 0px var(--fresa);
+            border-radius: 10px;
+        }
+
+        .bank-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ball-item { display: flex; flex-direction: column; align-items: center; font-size: 0.9rem; }
+
+        .mood-ball {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.1);
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        /* Colores */
+        .m-feliz { background: #ffeb3b; }
+        .m-amor { background: #ff4081; }
+        .m-extraño { background: #9c27b0; }
+        .m-cansado { background: #b0bec5; }
+        .m-hablar { background: #4caf50; }
+        .m-verte { background: #ff9800; }
+        .m-triste { background: #2196f3; }
+
+        .btn-clear {
+            background: var(--fresa-fuerte);
+            color: white;
+            border: 3px solid var(--cafe);
+            padding: 10px 20px;
+            font-family: 'VT323';
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--cafe);
+        }
+
+        .pixel-nav {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 85%;
+            background: white; border: 4px solid var(--cafe);
+            display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 6px 6px 0px var(--cafe);
+        }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); }
+    </style>
+</head>
+<body>
+
+    <div class="header-mood">
+        <h1>FRASCOS DE SENTIMIENTOS</h1>
+        <span id="user-indicator">Cargando...</span>
+    </div>
+
+    <div class="jars-container">
+        <div class="jar-wrapper">
+            <div id="jar-lalo" class="jar"></div>
+            <div class="jar-label">LALO</div>
+        </div>
+        <div class="jar-wrapper">
+            <div id="jar-mia" class="jar"></div>
+            <div class="jar-label">MAHIA</div>
+        </div>
+    </div>
+
+    <div class="mood-bank">
+        <span>Arrastra tu sentimiento al frasco:</span>
+        <div class="bank-grid">
+            <div class="ball-item"><div class="mood-ball m-feliz" draggable="true" id="feliz"></div><span>Feliz</span></div>
+            <div class="ball-item"><div class="mood-ball m-amor" draggable="true" id="amor"></div><span>Amor</span></div>
+            <div class="ball-item"><div class="mood-ball m-extraño" draggable="true" id="extraño"></div><span>Extraño</span></div>
+            <div class="ball-item"><div class="mood-ball m-verte" draggable="true" id="verte"></div><span>Verte</span></div>
+            <div class="ball-item"><div class="mood-ball m-hablar" draggable="true" id="hablar"></div><span>Hablar</span></div>
+            <div class="ball-item"><div class="mood-ball m-cansado" draggable="true" id="cansado"></div><span>Cansado</span></div>
+            <div class="ball-item"><div class="mood-ball m-triste" draggable="true" id="triste"></div><span>Triste</span></div>
+        </div>
+    </div>
+
+    <button class="btn-clear" onclick="confirmarLimpieza()">LIMPIAR MI FRASCO ✨</button>
+
+    <nav class="pixel-nav">
+        <a href="dashboard.html">🏠 INICIO</a>
+        <a href="mood.html" style="color:var(--fresa-fuerte)">🌈 MOOD</a>
+        <a href="ajustes.html">⚙️ AJUSTES</a>
+    </nav>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- SISTEMA DE IDENTIFICACIÓN CORREGIDO ---
+        const userRaw = localStorage.getItem('usuarioActual') || 'invitado';
+        // Normalizamos: Si es "Mahia" o "Mia", lo tratamos como "mia"
+        const currentProfile = userRaw.toLowerCase().includes('mahia') || userRaw.toLowerCase() === 'mia' ? 'mia' : 'lalo';
+        
+        document.getElementById('user-indicator').innerText = `PERFIL: ${currentProfile === 'mia' ? 'MAHIA' : 'LALO'}`;
+
+        // --- LÓGICA DE ARRASTRE MEJORADA ---
+        const balls = document.querySelectorAll('.mood-ball');
+        const jars = document.querySelectorAll('.jar');
+
+        balls.forEach(ball => {
+            ball.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData("mood", e.target.id);
+            });
+        });
+
+        jars.forEach(jar => {
+            jar.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                jar.classList.add('drag-over');
+            });
+
+            jar.addEventListener('dragleave', () => {
+                jar.classList.remove('drag-over');
+            });
+
+            jar.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                jar.classList.remove('drag-over');
+                
+                const moodType = e.dataTransfer.getData("mood");
+                const targetId = jar.id; // "jar-lalo" o "jar-mia"
+
+                // VALIDACIÓN CORREGIDA
+                if (targetId !== `jar-${currentProfile}`) {
+                    Swal.fire({
+                        title: '¡ALTO AHÍ!',
+                        text: 'Ese no es tu frasco. Pon tus sentimientos en el tuyo ❤️',
+                        icon: 'error',
+                        confirmButtonColor: '#ff4d6d'
+                    });
+                    return;
+                }
+
+                if(moodType) {
+                    const moodId = Date.now().toString();
+                    await setDoc(doc(db, `moods_${currentProfile}`, moodId), {
+                        type: moodType,
+                        timestamp: Date.now()
+                    });
+                }
+            });
+        });
+
+        // --- RENDERIZADO ---
+        function cargarFrasco(perfil) {
+            onSnapshot(collection(db, `moods_${perfil}`), (snapshot) => {
+                const jar = document.getElementById(`jar-${perfil}`);
+                jar.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const ball = document.createElement('div');
+                    ball.className = `mood-ball m-${data.type}`;
+                    jar.appendChild(ball);
+                });
+            });
+        }
+
+        window.confirmarLimpieza = () => {
+            Swal.fire({
+                title: '¿Limpiar frasco?',
+                text: "Se borrarán tus bolitas.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, vaciar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const snap = await getDocs(collection(db, `moods_${currentProfile}`));
+                    const p = snap.docs.map(d => deleteDoc(doc(db, `moods_${currentProfile}`, d.id)));
+                    await Promise.all(p);
+                    Swal.fire('¡Listo!', 'Frasco vacío', 'success');
+                }
+            });
+        };
+
+        cargarFrasco('lalo');
+        cargarFrasco('mia');
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Registro de Aventurero</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --fresa: #ff4d6d;
+            --crema: #fff0f3;
+            --cafe: #5c3d45;
+            --pixel-border: 4px solid var(--cafe);
+            --pixel-shadow: 5px 5px 0px var(--cafe);
+        }
+
+        body {
+            background-color: var(--crema);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .register-card {
+            background: white;
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            padding: 30px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            margin: 20px;
+        }
+
+        /* Moñito decorativo */
+        .register-card::before {
+            content: '🎀';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+        }
+
+        .pixel-title {
+            font-family: 'VT323', monospace;
+            font-size: 3rem;
+            color: var(--fresa);
+            text-shadow: 3px 3px 0px var(--cafe);
+            margin: 10px 0 5px 0;
+        }
+
+        .pixel-subtitle {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: var(--cafe);
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        /* Formulario con bordes */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: var(--fresa);
+            display: block;
+            margin-bottom: 5px;
+            margin-left: 5px;
+        }
+
+        .pixel-input {
+            width: 100%;
+            padding: 12px;
+            border: var(--pixel-border);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            outline: none;
+            background: white;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+        .pixel-input:focus {
+            background: var(--crema);
+            transform: translateY(-2px);
+        }
+
+        /* Selección de nombre */
+        .select-pixel {
+            width: 100%;
+            padding: 12px;
+            border: var(--pixel-border);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn-register {
+            background: var(--fresa);
+            color: white;
+            border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow);
+            padding: 15px;
+            font-family: 'VT323', monospace;
+            font-size: 1.8rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.1s;
+        }
+
+        .btn-register:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--cafe);
+        }
+
+        .back-link {
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            color: var(--cafe);
+            text-decoration: none;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .back-link:hover { color: var(--fresa); }
+
+    </style>
+</head>
+<body>
+
+    <div class="register-card">
+        <h1 class="pixel-title">NUEVA CUENTA</h1>
+        <p class="pixel-subtitle">¡ÚNETE A LA AVENTURA!</p>
+
+        <div class="form-section">
+            <div class="input-group">
+                <label>¿QUIÉN ERES?</label>
+                <select id="regNombre" class="select-pixel">
+                    <option value="" disabled selected>Selecciona tu nombre</option>
+                    <option value="Mahia">MAHIA</option>
+                    <option value="Lalo">LALO</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>TU GMAIL</label>
+                <input type="email" id="regEmail" class="pixel-input" placeholder="amor@ejemplo.com">
+            </div>
+
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <input type="password" id="regPass" class="pixel-input" placeholder="••••••••">
+            </div>
+
+            <button onclick="registrarUsuario()" class="btn-register">CREAR PERSONAJE</button>
+        </div>
+
+        <a href="login.html" class="back-link">¿YA TIENES CUENTA? ENTRAR</a>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        window.registrarUsuario = async function() {
+            const nombre = document.getElementById('regNombre').value;
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPass').value;
+
+            if (!nombre || !email || !pass) {
+                Swal.fire({ 
+                    title: '¡ALERTA!', 
+                    text: 'Completa todos los campos', 
+                    icon: 'warning',
+                    confirmButtonColor: '#ff85a1',
+                    background: '#fff',
+                    color: '#5c3d45'
+                });
+                return;
+            }
+
+            if (pass.length < 6) {
+                Swal.fire({ title: 'CUIDADO', text: 'La clave debe tener al menos 6 letras', icon: 'info' });
+                return;
+            }
+
+            try {
+                Swal.fire({ title: 'CREANDO...', didOpen: () => Swal.showLoading() });
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // GUARDAR EN BASE DE DATOS
+                await setDoc(doc(db, "usuarios", user.uid), {
+                    nombre: nombre,
+                    email: email,
+                    rol: "jugador"
+                });
+
+                Swal.fire({
+                    title: '¡BIENVENIDO/A!',
+                    text: 'Tu cuenta ha sido creada con éxito',
+                    icon: 'success',
+                    confirmButtonColor: '#ff85a1'
+                }).then(() => {
+                    window.location.replace("dashboard.html");
+                });
+
+            } catch (error) {
+                console.error(error);
+                let mensaje = "Error al registrarse";
+                if(error.code === 'auth/email-already-in-use') mensaje = "Este correo ya está en uso";
+                
+                Swal.fire({ title: 'ERROR', text: mensaje, icon: 'error' });
+            }
+        }
+    </script>
+</body>
+</html>

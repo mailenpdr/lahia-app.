@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Cartas de Amor</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --fresa: #ffb3c1;
+            --fresa-fuerte: #ff4d6d;
+            --crema: #fffaff;
+            --cafe: #5d4037;
+            --papel: #fdfcf0;
+        }
+
+        body {
+            background-color: var(--crema);
+            font-family: 'VT323', monospace;
+            margin: 0; padding-bottom: 100px;
+            color: var(--cafe);
+        }
+
+        .header-cartas {
+            padding: 30px;
+            background: white;
+            border-bottom: 5px solid var(--fresa);
+            text-align: center;
+        }
+
+        /* --- CONTENEDOR DE CARTAS --- */
+        .cartas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .carta-item {
+            background: var(--papel);
+            border: 2px solid var(--fresa);
+            border-radius: 10px;
+            padding: 15px;
+            height: 180px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 4px 4px 0px var(--fresa);
+            transition: transform 0.2s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .carta-item:hover {
+            transform: translateY(-5px) rotate(2deg);
+        }
+
+        .carta-item::before {
+            content: '💌';
+            position: absolute;
+            top: 10px; right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .carta-titulo {
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: var(--fresa-fuerte);
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--fresa);
+        }
+
+        .carta-preview {
+            font-size: 1rem;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #777;
+        }
+
+        /* --- BOTÓN AÑADIR --- */
+        .add-btn {
+            position: fixed;
+            bottom: 110px; right: 20px;
+            width: 60px; height: 60px;
+            background: var(--fresa-fuerte);
+            color: white;
+            border-radius: 50%;
+            border: 3px solid var(--cafe);
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--cafe);
+            z-index: 100;
+        }
+
+        /* --- ESTILO DEL MODAL DE LECTURA --- */
+        .modal-contenido {
+            font-family: 'Caveat', cursive;
+            font-size: 1.8rem;
+            text-align: left;
+            line-height: 1.4;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* --- NAV --- */
+        .pixel-nav {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 90%;
+            max-width: 400px; background: white;
+            border: 4px solid var(--cafe);
+            display: flex; justify-content: space-around;
+            padding: 12px 0; box-shadow: 6px 6px 0px var(--cafe);
+        }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="header-cartas">
+        <h1 style="margin:0;">NUESTRAS CARTAS</h1>
+        <p>Palabras que se quedan para siempre ❤️</p>
+    </div>
+
+    <div class="cartas-grid" id="contenedor-cartas">
+        </div>
+
+    <button class="add-btn" onclick="nuevaCarta()">+</button>
+
+    <nav class="pixel-nav">
+        <a href="dashboard.html">🏠 INICIO</a>
+        <a href="cartas.html" style="color:var(--fresa-fuerte); font-weight: bold;">💌 CARTAS</a>
+        <a href="notas.html">📝 NOTAS</a>
+    </nav>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const currentProfile = localStorage.getItem('usuarioActual') || 'invitado';
+
+        // --- ESCUCHAR CARTAS EN TIEMPO REAL ---
+        const q = query(collection(db, "cartas"), orderBy("fecha", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const contenedor = document.getElementById('contenedor-cartas');
+            contenedor.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const carta = doc.data();
+                const div = document.createElement('div');
+                div.className = 'carta-item';
+                div.onclick = () => leerCarta(carta.titulo, carta.contenido, carta.autor);
+                
+                div.innerHTML = `
+                    <div class="carta-titulo">${carta.titulo}</div>
+                    <div class="carta-preview">${carta.contenido}</div>
+                    <div style="margin-top:auto; font-size:0.8rem; text-align:right; opacity:0.6;">
+                        De: ${carta.autor}
+                    </div>
+                `;
+                contenedor.appendChild(div);
+            });
+        });
+
+        // --- FUNCIÓN PARA ESCRIBIR ---
+        window.nuevaCarta = async () => {
+            const { value: formValues } = await Swal.fire({
+                title: 'Escribir Carta',
+                html:
+                    '<input id="swal-input1" class="swal2-input" placeholder="Título">' +
+                    '<textarea id="swal-input2" class="swal2-textarea" placeholder="Escribe aquí tu carta larga..."></textarea>',
+                focusConfirm: false,
+                confirmButtonText: 'Enviar Carta 💌',
+                confirmButtonColor: '#ff4d6d',
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-input1').value,
+                        document.getElementById('swal-input2').value
+                    ]
+                }
+            });
+
+            if (formValues && formValues[0] && formValues[1]) {
+                await addDoc(collection(db, "cartas"), {
+                    titulo: formValues[0],
+                    contenido: formValues[1],
+                    autor: currentProfile.toUpperCase(),
+                    fecha: Date.now()
+                });
+            }
+        };
+
+        // --- FUNCIÓN PARA LEER (EXPANDIR) ---
+        window.leerCarta = (titulo, contenido, autor) => {
+            Swal.fire({
+                title: `<strong>${titulo}</strong>`,
+                html: `<div class="modal-contenido">${contenido}</div><p style="text-align:right; font-family:'VT323';">- Con amor, ${autor}</p>`,
+                showCloseButton: true,
+                focusConfirm: false,
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#5d4037',
+                background: '#fdfcf0', // Color papel
+                width: '90%'
+            });
+        };
+    </script>
+</body>
+</html>

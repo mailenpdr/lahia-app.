@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lalhia Dodge - Hyper Dynamic</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --neon-rosa: #ff007f;
+            --neon-azul: #00f3ff;
+            --fondo: #1a0525;
+        }
+
+        body {
+            margin: 0; background: var(--fondo);
+            font-family: 'VT323', monospace; color: white;
+            height: 100vh; overflow: hidden; touch-action: none;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- UI SUPERIOR --- */
+        .ui-top {
+            display: flex; justify-content: space-between; padding: 15px 25px;
+            background: rgba(0,0,0,0.4); border-bottom: 2px solid var(--neon-azul);
+            z-index: 100;
+        }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 1rem; color: var(--neon-azul); display: block; }
+        .stat-val { font-size: 1.8rem; text-shadow: 0 0 10px var(--neon-azul); }
+
+        /* --- ÁREA DE JUEGO --- */
+        #game-canvas {
+            position: relative; width: 100%; flex-grow: 1;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.15) 0%, transparent 80%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            overflow: hidden;
+        }
+
+        #player {
+            position: absolute; width: 75px; height: 75px;
+            pointer-events: none; z-index: 50;
+            will-change: transform;
+            filter: drop-shadow(0 0 12px var(--neon-azul));
+        }
+
+        .enemy {
+            position: absolute; width: 50px; height: 50px;
+            z-index: 40; pointer-events: none;
+            will-change: transform;
+        }
+
+        /* --- BOTONES --- */
+        .footer {
+            padding: 15px; display: flex; gap: 15px;
+            background: rgba(0,0,0,0.5); z-index: 100;
+        }
+        .btn {
+            flex: 1; padding: 12px; font-family: 'VT323'; font-size: 1.6rem;
+            border: none; border-radius: 12px; color: white; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-play { background: var(--neon-rosa); box-shadow: 0 5px 0 #b30059; }
+        .btn-exit { background: #444; box-shadow: 0 5px 0 #222; }
+        .btn:active { transform: translateY(3px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="ui-top">
+        <div class="stat-box">
+            <span class="stat-label">MEJOR</span>
+            <b id="best-val" class="stat-val">0</b>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">PUNTOS</span>
+            <b id="score-val" class="stat-val">0</b>
+        </div>
+    </div>
+
+    <div id="game-canvas">
+        <img id="player" src="" style="display:none;">
+    </div>
+
+    <div class="footer">
+        <button id="play-btn" class="btn btn-play" onclick="toggleGame()">JUGAR 🕹️</button>
+        <button class="btn btn-exit" onclick="window.location.href='juegos.html'">SALIR ⬅️</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const player = document.getElementById('player');
+        const scoreEl = document.getElementById('score-val');
+        const bestEl = document.getElementById('best-val');
+
+        // Configuración de Personajes
+        const usuario = localStorage.getItem('usuarioActual') || 'Lalo';
+        const esLalo = usuario.toLowerCase() === 'lalo';
+        const imgPlayer = esLalo ? 'lalitogame.png' : 'mahitagame.png';
+        const imgEnemy = esLalo ? 'mahitagame.png' : 'lalitogame.png';
+        const recordKey = `record_dodge_${usuario.toLowerCase()}`;
+
+        let gameActive = false;
+        let score = 0;
+        let enemies = [];
+        let mouseX = 0, mouseY = 0;
+        let pX = 0, pY = 0;
+
+        // Inicialización
+        window.onload = () => {
+            player.src = imgPlayer;
+            bestEl.innerText = localStorage.getItem(recordKey) || 0;
+            pX = window.innerWidth / 2 - 37;
+            pY = canvas.offsetHeight / 2 - 37;
+            updatePlayerPos();
+        };
+
+        // SEGUIMIENTO SUAVE (DEDO / MOUSE)
+        const handleMove = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            mouseX = clientX - rect.left - 37;
+            mouseY = clientY - rect.top - 37;
+        };
+
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('touchmove', (e) => {
+            handleMove(e);
+            e.preventDefault();
+        }, {passive: false});
+
+        function updatePlayerPos() {
+            // Suavizado (Lerp) para que el movimiento se sienta "orgánico"
+            pX += (mouseX - pX) * 0.2;
+            pY += (mouseY - pY) * 0.2;
+            player.style.transform = `translate(${pX}px, ${pY}px)`;
+            if (gameActive) player.style.display = 'block';
+        }
+
+        function toggleGame() {
+            if (gameActive) return;
+            gameActive = true;
+            score = 0;
+            scoreEl.innerText = score;
+            enemies.forEach(e => e.el.remove());
+            enemies = [];
+            document.getElementById('play-btn').style.display = 'none';
+            gameLoop();
+            spawnEnemy();
+        }
+
+        function spawnEnemy() {
+            if (!gameActive) return;
+            
+            const el = document.createElement('img');
+            el.src = imgEnemy;
+            el.className = 'enemy';
+            canvas.appendChild(el);
+
+            const side = Math.floor(Math.random() * 4);
+            let x, y, vx, vy;
+            const speed = 2 + Math.random() * 3 + (score / 20);
+
+            if (side === 0) { x = Math.random() * canvas.offsetWidth; y = -50; vx = (Math.random() - 0.5) * 2; vy = speed; } // Arriba
+            else if (side === 1) { x = canvas.offsetWidth + 50; y = Math.random() * canvas.offsetHeight; vx = -speed; vy = (Math.random() - 0.5) * 2; } // Derecha
+            else if (side === 2) { x = Math.random() * canvas.offsetWidth; y = canvas.offsetHeight + 50; vx = (Math.random() - 0.5) * 2; vy = -speed; } // Abajo
+            else { x = -50; y = Math.random() * canvas.offsetHeight; vx = speed; vy = (Math.random() - 0.5) * 2; } // Izquierda
+
+            enemies.push({ el, x, y, vx, vy, rotation: 0, rotSpeed: (Math.random() - 0.5) * 10 });
+            
+            setTimeout(spawnEnemy, Math.max(200, 600 - (score * 2)));
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            updatePlayerPos();
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                e.x += e.vx;
+                e.y += e.vy;
+                e.rotation += e.rotSpeed;
+
+                e.el.style.transform = `translate(${e.x}px, ${e.y}px) rotate(${e.rotation}deg)`;
+
+                // Colisión detectada
+                if (checkCollision(pX, pY, e.x, e.y)) {
+                    gameOver();
+                    return;
+                }
+
+                // Eliminar enemigos fuera de rango y sumar puntos
+                if (e.x < -100 || e.x > canvas.offsetWidth + 100 || e.y < -100 || e.y > canvas.offsetHeight + 100) {
+                    e.el.remove();
+                    enemies.splice(i, 1);
+                    score++;
+                    scoreEl.innerText = score;
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision(x1, y1, x2, y2) {
+            const dist = Math.hypot((x1 + 37) - (x2 + 25), (y1 + 37) - (y2 + 25));
+            return dist < 45; // Radio de colisión ajustado para ser justo
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('play-btn').style.display = 'block';
+            document.getElementById('play-btn').innerText = 'REINTENTAR';
+            
+            const best = localStorage.getItem(recordKey) || 0;
+            if (score > best) {
+                localStorage.setItem(recordKey, score);
+                bestEl.innerText = score;
+            }
+
+            Swal.fire({
+                title: '¡BOOM! 💥',
+                text: `Esquivaste ${score} veces. ¡Nada mal!`,
+                background: '#1a0525',
+                color: '#00f3ff',
+                confirmButtonText: '¡OTRA VEZ!'
+            });
+        }
+    </script>
+</body>
+</html>

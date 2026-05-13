@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --fresa: #ffb3c1;
+            --fresa-dark: #ff4d6d;
+            --crema: #fffaff;
+            --cafe: #5d4037;
+            --pastel: #ffe5ec;
+            --pixel-border: 4px solid var(--cafe);
+            --pixel-shadow: 5px 5px 0px var(--cafe);
+        }
+
+        body {
+            background-color: var(--crema);
+            background-image: radial-gradient(#ffcad4 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+            font-family: 'Quicksand', sans-serif;
+            margin: 0; padding: 0;
+            text-align: center; color: var(--cafe);
+            padding-bottom: 120px; overflow-x: hidden;
+        }
+
+        /* --- LOADER INTERNO --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--crema); display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; transition: opacity 0.5s ease;
+        }
+        .loader-heart { font-size: 5rem; color: var(--fresa-dark); animation: heartBeat 1.2s infinite; }
+        @keyframes heartBeat { 0%, 30%, 60%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 45% { transform: scale(1.15); } }
+
+        /* --- SECCIÓN BIENVENIDA --- */
+        .welcome-section {
+            padding: 40px 20px; background: white;
+            border-bottom: var(--pixel-border);
+            animation: slideDown 0.6s ease-out;
+        }
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
+        h1#greeting {
+            font-family: 'VT323', monospace; font-size: 2.8rem;
+            margin: 0; color: var(--fresa-dark);
+            text-shadow: 2px 2px 0px var(--pastel);
+        }
+
+        .love-days {
+            font-family: 'VT323', monospace; font-size: 1.6rem; 
+            color: white; background: var(--fresa-dark);
+            display: inline-block; padding: 5px 25px; border: 3px solid var(--cafe);
+            margin-top: 10px; box-shadow: 4px 4px 0px var(--cafe);
+            border-radius: 0px; /* Estilo más pixel */
+        }
+
+        /* --- GATITO INTERACTIVO --- */
+        .mascot-interaction { margin: 30px auto; max-width: 320px; cursor: pointer; position: relative; }
+        .speech-bubble {
+            background: white; border: 3px solid var(--cafe);
+            padding: 15px; margin-bottom: 20px;
+            position: relative; box-shadow: 4px 4px 0px var(--pastel);
+            font-size: 1.2rem; font-weight: bold; min-height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -12px; left: 50%;
+            transform: translateX(-50%); border-width: 12px 12px 0;
+            border-style: solid; border-color: var(--cafe) transparent transparent;
+        }
+
+        .dashboard-cat { 
+            width: 130px; image-rendering: pixelated; 
+            filter: drop-shadow(4px 4px 0px var(--pastel));
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .dashboard-cat:hover { transform: scale(1.1) rotate(5deg); }
+
+        /* --- MENÚ GRID --- */
+        .menu-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            padding: 20px; max-width: 450px; margin: 0 auto;
+        }
+        .menu-btn {
+            background: white; border: var(--pixel-border);
+            padding: 15px 10px; text-decoration: none; color: var(--cafe);
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: var(--pixel-shadow); cursor: pointer; transition: all 0.2s;
+            font-family: 'VT323', monospace; font-size: 1.5rem;
+        }
+        .menu-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px; }
+        .menu-btn .icon { font-size: 2.2rem; margin-bottom: 5px; transition: 0.3s; }
+        .menu-btn:hover .icon { transform: scale(1.2); }
+
+        .btn-pet { background: #fff0f3; } .btn-gallery { background: #fffdf0; }
+        .btn-notes { background: #f0fff4; } .btn-letters { background: #fff0f5; }
+        .btn-capsule { background: #f5f0ff; } .btn-games { background: #e0f7fa; }
+
+        /* --- NAVBAR --- */
+        .pixel-nav {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 90%;
+            max-width: 400px; background: white;
+            border: var(--pixel-border);
+            display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 6px 6px 0px var(--cafe);
+            z-index: 1000;
+        }
+        .nav-item { 
+            text-decoration: none; color: var(--cafe); font-size: 0.9rem; 
+            text-align: center; cursor: pointer; font-weight: bold;
+        }
+        .nav-item span { font-size: 1.5rem; display: block; }
+        .nav-item.active { color: var(--fresa-dark); }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-heart">❤️</div>
+        <div class="loader-text" style="font-family:'VT323'; font-size: 2rem;">CARGANDO AMOR...</div>
+    </div>
+
+    <section class="welcome-section">
+        <h1 id="greeting">¡HOLA! ✨</h1>
+        <div class="love-days" id="daysCounter">💖 CARGANDO... 💖</div>
+    </section>
+
+    <div class="mascot-interaction" onclick="interaccionTierna()">
+        <div class="speech-bubble" id="advice-text">¡Miau! Tócame para decirte algo... ✨</div>
+        <img src="gatito feliz _3.jpg" class="dashboard-cat" id="main-mascot" alt="Gatito">
+    </div>
+
+    <div class="menu-grid">
+        <div onclick="navegar('mascota.html')" class="menu-btn btn-pet"><span class="icon">🐱</span><span>MASCOTA</span></div>
+        <div onclick="navegar('galeria.html')" class="menu-btn btn-gallery"><span class="icon">📸</span><span>FOTOS</span></div>
+        <div onclick="navegar('notas.html')" class="menu-btn btn-notes"><span class="icon">📝</span><span>NOTITAS</span></div>
+        <div onclick="navegar('cartas.html')" class="menu-btn btn-letters"><span class="icon">💌</span><span>CARTAS</span></div>
+        <div onclick="navegar('capsula.html')" class="menu-btn btn-capsule"><span class="icon">⏳</span><span>CÁPSULA</span></div>
+        <div onclick="navegar('juegos.html')" class="menu-btn btn-games"><span class="icon">🎮</span><span>JUEGOS</span></div>
+    </div>
+
+    <nav class="pixel-nav">
+        <div onclick="navegar('dashboard.html')" class="nav-item active"><span>🏠</span>INICIO</div>
+        <div onclick="navegar('mood.html')" class="nav-item"><span>🌈</span>MOOD</div>
+        <div onclick="navegar('ajustes.html')" class="nav-item"><span>⚙️</span>AJUSTES</div>
+    </nav>
+
+    <script type="module">
+        // 1. VALIDACIÓN DE SESIÓN ESTRICTA
+        const usuarioActual = localStorage.getItem('usuarioActual');
+        if (!usuarioActual) {
+            window.location.replace("login.html");
+        }
+
+        // 2. SALUDO DINÁMICO
+        function configurarSaludo() {
+            const greeting = document.getElementById('greeting');
+            const hour = new Date().getHours();
+            let msg = "";
+            if (hour < 12) msg = "¡BUEN DÍA, ";
+            else if (hour < 19) msg = "¡BUENAS TARDES, ";
+            else msg = "¡BUENAS NOCHES, ";
+            
+            greeting.innerText = `${msg}${usuarioActual.toUpperCase()}! ✨`;
+        }
+
+        // 3. CONTADOR DE DÍAS
+        const fechaInicio = new Date("2025-04-15");
+        function actualizarContador() {
+            const hoy = new Date();
+            const diferencia = hoy - fechaInicio;
+            const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+            document.getElementById('daysCounter').innerText = dias < 0 ? "¡FALTA POCO! ✨" : `💖 ${dias} DÍAS JUNTOS 💖`;
+        }
+
+        // 4. INICIALIZACIÓN
+        window.onload = () => {
+            configurarSaludo();
+            actualizarContador();
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }, 800);
+        };
+
+        // 5. NAVEGACIÓN
+        window.navegar = (url) => {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'flex'; 
+            loader.style.opacity = '1';
+            setTimeout(() => { window.location.href = url; }, 400);
+        };
+
+        // 6. INTERACCIÓN DEL GATITO
+        window.interaccionTierna = () => {
+            const frases = [
+                "¿Ya comiste algo rico hoy, bomboncito? 🍎",
+                "¡No olvides tomar agüita mi amor! ✨",
+                "¿Ya estiraste tu espaldita hoy? 🐾",
+                "Si te sientes cansado, recuerda descansar un poquito 💤",
+                "¡TE AMOOOOOOOOOOOOOOOOO! ❤️",
+                "Eres la persona favorita de este gatito 🐈",
+                `Alguien ama muchísimo a ${usuarioActual} por aquí... 🐾`,
+                "Tu sonrisa es lo más bonito del mundo ✨",
+                "¡Eres el mejor en todo lo que haces! 🏆",
+                "¡Muaki! Un besito virtual 💕"
+            ];
+            
+            const txt = document.getElementById('advice-text');
+            txt.innerText = frases[Math.floor(Math.random() * frases.length)];
+            
+            confetti({ 
+                particleCount: 40, 
+                spread: 60, 
+                origin: { y: 0.7 }, 
+                colors: ['#ffb3c1', '#ffffff', '#ff4d6d'] 
+            });
+
+            const cat = document.getElementById('main-mascot');
+            cat.style.transform = "scale(1.2) rotate(10deg)";
+            setTimeout(() => { cat.style.transform = "scale(1) rotate(0deg)"; }, 300);
+        };
+    </script>
+</body>
+</html>

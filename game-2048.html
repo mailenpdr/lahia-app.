@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2048 Drag Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --neon-rosa: #ff007f;
+            --neon-azul: #00f3ff;
+            --neon-morado: #bc13fe;
+            --fondo: #1a0525;
+        }
+
+        body {
+            margin: 0; background: var(--fondo);
+            font-family: 'VT323', monospace; color: white;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; touch-action: none;
+        }
+
+        .header { width: 90%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        h1 { font-size: 3rem; color: var(--neon-azul); text-shadow: 0 0 15px var(--neon-azul); }
+        
+        .score-box { background: rgba(255,255,255,0.1); padding: 5px 12px; border: 2px solid var(--neon-rosa); border-radius: 10px; text-align: center; }
+
+        #game-container {
+            position: relative; 
+            width: 340px; height: 340px;
+            background: rgba(188, 19, 254, 0.1); border: 4px solid var(--neon-morado);
+            border-radius: 15px; margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .grid-bg {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            padding: 10px; width: 320px; height: 320px;
+        }
+        .grid-cell { background: rgba(255, 255, 255, 0.05); border-radius: 8px; width: 72px; height: 72px; }
+
+        .tile {
+            position: absolute;
+            width: 72px; height: 72px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold;
+            z-index: 10;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.1s ease-out, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        .tile:active { cursor: grabbing; scale: 1.1; z-index: 100; box-shadow: 0 0 20px white; }
+
+        /* Colores */
+        .tile-2 { background: rgba(0, 243, 255, 0.3); border: 2px solid var(--neon-azul); color: var(--neon-azul); }
+        .tile-4 { background: rgba(188, 19, 254, 0.3); border: 2px solid var(--neon-morado); color: var(--neon-morado); }
+        .tile-8 { background: rgba(255, 0, 127, 0.3); border: 2px solid var(--neon-rosa); color: var(--neon-rosa); }
+        .tile-16 { background: var(--neon-rosa); color: white; }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 25px; width: 90%; max-width: 400px; }
+        .btn { flex: 1; padding: 12px; font-family: 'VT323'; font-size: 1.8rem; border: none; border-radius: 12px; color: white; background: var(--neon-rosa); cursor: pointer; }
+        .btn-exit { background: #444; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>2048</h1>
+        <div class="score-box"><span>PUNTOS</span><br><b id="current-score">0</b></div>
+    </div>
+
+    <div id="game-container">
+        <div class="grid-bg">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+        </div>
+        <div id="tile-container"></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" onclick="initGame()">NUEVO</button>
+        <button class="btn btn-exit" onclick="window.location.href='juegos.html'">SALIR ⬅️</button>
+    </div>
+
+    <script>
+        let grid = Array(16).fill(0);
+        let score = 0;
+        const container = document.getElementById('tile-container');
+        let isDragging = false;
+        let startPoint = { x: 0, y: 0 };
+        let activeTile = null;
+
+        function initGame() {
+            grid = Array(16).fill(0);
+            score = 0;
+            document.getElementById('current-score').innerText = 0;
+            addTile(); addTile();
+            render();
+        }
+
+        function addTile() {
+            let empty = grid.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if (empty.length > 0) grid[empty[Math.floor(Math.random() * empty.length)]] = Math.random() > 0.1 ? 2 : 4;
+        }
+
+        function render() {
+            container.innerHTML = '';
+            grid.forEach((val, i) => {
+                if (val !== 0) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile tile-${val}`;
+                    tile.innerText = val;
+                    const r = Math.floor(i / 4), c = i % 4;
+                    const posX = 10 + c * 82;
+                    const posY = 10 + r * 82;
+                    tile.style.left = posX + 'px';
+                    tile.style.top = posY + 'px';
+                    
+                    // Eventos de Arrastre (Mouse y Touch)
+                    tile.onmousedown = tile.ontouchstart = (e) => startDrag(e, tile);
+                    container.appendChild(tile);
+                }
+            });
+        }
+
+        function startDrag(e, tile) {
+            isDragging = true;
+            activeTile = tile;
+            const event = e.touches ? e.touches[0] : e;
+            startPoint = { x: event.clientX, y: event.clientY };
+            
+            document.onmousemove = document.ontouchmove = (e) => onDrag(e);
+            document.onmouseup = document.ontouchend = (e) => endDrag(e);
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            const event = e.touches ? e.touches[0] : e;
+            const dx = event.clientX - startPoint.x;
+            const dy = event.clientY - startPoint.y;
+            
+            // Mover visualmente el cuadro que agarraste
+            activeTile.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+
+        function endDrag(e) {
+            if (!isDragging) return;
+            const event = e.changedTouches ? e.changedTouches[0] : e;
+            const dx = event.clientX - startPoint.x;
+            const dy = event.clientY - startPoint.y;
+            
+            isDragging = false;
+            document.onmousemove = document.onmouseup = null;
+            document.ontouchmove = document.ontouchend = null;
+
+            // Determinar dirección del lanzamiento
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (Math.abs(dx) > 40) move(dx > 0 ? 'right' : 'left');
+                else render(); // Volver a su lugar si no arrastró suficiente
+            } else {
+                if (Math.abs(dy) > 40) move(dy > 0 ? 'down' : 'up');
+                else render();
+            }
+        }
+
+        function move(dir) {
+            let old = JSON.stringify(grid);
+            
+            const slide = (line) => {
+                let row = line.filter(v => v);
+                for(let i=0; i<row.length-1; i++) {
+                    if(row[i] === row[i+1]) { row[i]*=2; score+=row[i]; row.splice(i+1, 1); }
+                }
+                while(row.length<4) row.push(0);
+                return row;
+            };
+
+            for(let i=0; i<4; i++) {
+                let line = [];
+                for(let j=0; j<4; j++) {
+                    if(dir==='left' || dir==='right') line.push(grid[i*4+j]);
+                    else line.push(grid[j*4+i]);
+                }
+                if(dir==='right' || dir==='down') line.reverse();
+                line = slide(line);
+                if(dir==='right' || dir==='down') line.reverse();
+                for(let j=0; j<4; j++) {
+                    if(dir==='left' || dir==='right') grid[i*4+j] = line[j];
+                    else grid[j*4+i] = line[j];
+                }
+            }
+
+            if (old !== JSON.stringify(grid)) {
+                addTile();
+                document.getElementById('current-score').innerText = score;
+            }
+            render(); // Esto resetea las posiciones y aplica el movimiento
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

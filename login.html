@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --fresa: #ff4d6d;
+            --fresa-light: #ffb3c1;
+            --crema: #fff0f3;
+            --cafe: #5c3d45;
+            --pixel-border: 4px solid var(--cafe);
+            --pixel-shadow: 5px 5px 0px var(--cafe);
+        }
+
+        body {
+            background-color: var(--crema);
+            background-image: radial-gradient(var(--fresa-light) 2px, transparent 2px);
+            background-size: 25px 25px;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+        }
+
+        .login-card {
+            background: white; border: var(--pixel-border);
+            box-shadow: var(--pixel-shadow); padding: 30px;
+            width: 85%; max-width: 380px; text-align: center;
+            position: relative; animation: float 4s ease-in-out infinite;
+        }
+
+        /* Moñitos Coquette */
+        .login-card::before { content: '🎀'; position: absolute; top: -25px; left: -15px; font-size: 2.5rem; transform: rotate(-15deg); }
+        .login-card::after { content: '🎀'; position: absolute; top: -25px; right: -15px; font-size: 2.5rem; transform: rotate(15deg); }
+
+        .pixel-title {
+            font-family: 'VT323', monospace; font-size: 3.5rem;
+            color: var(--fresa); text-shadow: 3px 3px 0px var(--cafe);
+            margin: 0;
+        }
+
+        .pixel-subtitle {
+            font-family: 'VT323', monospace; font-size: 1.2rem;
+            color: var(--cafe); margin-bottom: 20px; opacity: 0.8;
+        }
+
+        /* Selección de Personaje Estilo Smash Bros */
+        .user-selection {
+            display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;
+        }
+
+        .user-bubble { cursor: pointer; position: relative; }
+        .user-bubble input { display: none; }
+
+        .avatar-frame {
+            width: 90px; height: 90px; border: var(--pixel-border);
+            background: #eee; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .avatar-frame img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: grayscale(100%); image-rendering: pixelated;
+        }
+
+        /* Efecto Seleccionado */
+        .user-bubble input:checked + .avatar-frame {
+            background: var(--fresa-light);
+            transform: scale(1.15) translateY(-8px);
+            box-shadow: 0 8px 0px var(--cafe);
+            border-color: var(--fresa);
+        }
+
+        .user-bubble input:checked + .avatar-frame img { filter: grayscale(0%); }
+
+        .user-label {
+            display: block; font-family: 'VT323', monospace;
+            font-size: 1.3rem; margin-top: 8px; color: var(--cafe);
+        }
+
+        /* Inputs */
+        .form-section { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+        .input-group label {
+            font-family: 'VT323', monospace; font-size: 1.2rem;
+            color: var(--fresa); margin-left: 5px;
+        }
+
+        .pixel-input {
+            width: 100%; padding: 10px; border: var(--pixel-border);
+            font-family: 'VT323', monospace; font-size: 1.4rem;
+            outline: none; box-sizing: border-box; transition: 0.2s;
+        }
+
+        .pixel-input:focus { background: #fffaff; transform: translateY(-2px); }
+
+        .btn-start {
+            background: var(--fresa); color: white;
+            border: var(--pixel-border); box-shadow: var(--pixel-shadow);
+            padding: 12px; font-family: 'VT323', monospace;
+            font-size: 2rem; cursor: pointer; margin-top: 10px; transition: 0.1s;
+        }
+
+        .btn-start:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px; }
+
+        .register-link {
+            font-family: 'VT323', monospace; font-size: 1.1rem;
+            color: var(--cafe); text-decoration: none;
+            margin-top: 15px; display: block; text-align: center;
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1 class="pixel-title">LOGIN</h1>
+        <p class="pixel-subtitle">¿QUIÉN ERES HOY?</p>
+
+        <div class="user-selection">
+            <label class="user-bubble">
+                <input type="radio" name="userSelect" value="Mahia">
+                <div class="avatar-frame">
+                    <img src="mahitaperfil.png" alt="Mahia" onerror="this.src='https://placehold.co/100x100?text=Mahia'">
+                </div>
+                <span class="user-label">MAHIA</span>
+            </label>
+            <label class="user-bubble">
+                <input type="radio" name="userSelect" value="Lalo">
+                <div class="avatar-frame">
+                    <img src="lalitoperfil.png" alt="Lalo" onerror="this.src='https://placehold.co/100x100?text=Lalo'">
+                </div>
+                <span class="user-label">LALO</span>
+            </label>
+        </div>
+
+        <div class="form-section">
+            <div class="input-group">
+                <label>CORREO MÁGICO</label>
+                <input type="email" id="loginEmail" class="pixel-input" placeholder="amor@pinguis.com">
+            </div>
+            <div class="input-group">
+                <label>CONTRASEÑA</label>
+                <input type="password" id="loginPass" class="pixel-input" placeholder="••••••••">
+            </div>
+            
+            <button id="btnEntrar" class="btn-start">¡ENTRAR!</button>
+            <a href="registro.html" class="register-link">¿ERES NUEVO? REGÍSTRATE AQUÍ ✨</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        document.getElementById('btnEntrar').onclick = async () => {
+            const seleccionado = document.querySelector('input[name="userSelect"]:checked');
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value;
+
+            if (!seleccionado || !email || !pass) {
+                Swal.fire({ title: '¡UPS!', text: 'Completa todos los campos y elige tu personaje', icon: 'warning', confirmButtonColor: '#ff4d6d' });
+                return;
+            }
+
+            try {
+                Swal.fire({ title: 'CONECTANDO...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // Verificar en Firestore
+                const docSnap = await getDoc(doc(db, "usuarios", user.uid));
+
+                if (docSnap.exists()) {
+                    const datos = docSnap.data();
+                    
+                    // Verificamos que el personaje coincida (ignorando mayúsculas)
+                    if (datos.nombre.toLowerCase() !== seleccionado.value.toLowerCase()) {
+                        Swal.fire({ title: '¡ESE NO ERES TÚ!', text: `Esta cuenta le pertenece a ${datos.nombre}`, icon: 'error', confirmButtonColor: '#ff4d6d' });
+                        await auth.signOut();
+                        return;
+                    }
+
+                    // GUARDAMOS CON EL MISMO NOMBRE QUE BUSCA EL DASHBOARD
+                    localStorage.setItem('usuarioActual', seleccionado.value); 
+                    
+                    Swal.fire({ title: '¡HOLA DE NUEVO!', text: 'Entrando a nuestro mundo...', icon: 'success', timer: 1500, showConfirmButton: false });
+                    
+                    setTimeout(() => { window.location.replace("index.html"); }, 1500);
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire({ title: 'ERROR', text: 'Correo o contraseña incorrectos', icon: 'error', confirmButtonColor: '#ff4d6d' });
+            }
+        };
+    </script>
+</body>
+</html>

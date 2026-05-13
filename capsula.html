@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Cápsula del Tiempo</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --oro: #ffca28;
+            --fresa: #ffb3c1;
+            --cafe: #5d4037;
+            --fondo: #1a0525;
+        }
+
+        body {
+            background-color: var(--fondo);
+            font-family: 'VT323', monospace;
+            color: white; margin: 0; padding-bottom: 100px;
+            text-align: center;
+        }
+
+        .header-capsula {
+            padding: 30px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 3px solid var(--oro);
+        }
+
+        /* --- GRID DE CÁPSULAS --- */
+        .capsulas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px; padding: 20px;
+        }
+
+        .capsula-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--oro);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .capsula-item.locked { opacity: 0.7; filter: grayscale(0.5); }
+        .capsula-item.unlocked { 
+            box-shadow: 0 0 20px var(--oro); 
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+        /* --- BOTÓN AÑADIR --- */
+        .add-btn {
+            background: var(--oro);
+            color: var(--cafe);
+            border: none; padding: 15px 30px;
+            font-family: 'VT323'; font-size: 1.5rem;
+            border-radius: 50px; cursor: pointer;
+            margin-top: 20px; box-shadow: 0 5px 0 #b7950b;
+        }
+
+        /* --- NAV --- */
+        .pixel-nav {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 85%;
+            max-width: 400px; background: white;
+            border: 4px solid var(--cafe);
+            display: flex; justify-content: space-around;
+            padding: 12px 0; box-shadow: 6px 6px 0px var(--cafe);
+        }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="header-capsula">
+        <h1>CÁPSULAS DEL TIEMPO ⏳</h1>
+        <p>Mensajes para el futuro...</p>
+    </div>
+
+    <div class="capsulas-grid" id="capsulas-container">
+        </div>
+
+    <button class="add-btn" onclick="crearCapsula()">CREAR CÁPSULA 🚀</button>
+
+    <nav class="pixel-nav">
+        <a href="dashboard.html">🏠 INICIO</a>
+        <a href="capsula.html" style="color:var(--oro); font-weight: bold;">⏳ CÁPSULA</a>
+        <a href="cartas.html">💌 CARTAS</a>
+    </nav>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const currentProfile = localStorage.getItem('usuarioActual') || 'invitado';
+
+        // --- CARGAR CÁPSULAS ---
+        onSnapshot(query(collection(db, "capsulas"), orderBy("fechaMeta", "asc")), (snapshot) => {
+            const container = document.getElementById('capsulas-container');
+            container.innerHTML = '';
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const ahora = Date.now();
+                const esTiempo = ahora >= data.fechaMeta;
+
+                const div = document.createElement('div');
+                div.className = `capsula-item ${esTiempo ? 'unlocked' : 'locked'}`;
+                
+                div.innerHTML = `
+                    <span class="icon">${esTiempo ? '🔓' : '🔒'}</span>
+                    <div style="font-weight:bold;">${data.titulo}</div>
+                    <div style="font-size:0.8rem; margin-top:5px;">
+                        ${esTiempo ? '¡ABIERTA!' : 'Abre: ' + new Date(data.fechaMeta).toLocaleDateString()}
+                    </div>
+                `;
+
+                div.onclick = () => {
+                    if (esTiempo) {
+                        abrirCapsula(data.titulo, data.mensaje, data.autor);
+                    } else {
+                        mostrarCuentaRegresiva(data.fechaMeta);
+                    }
+                };
+                container.appendChild(div);
+            });
+        });
+
+        // --- CREAR CÁPSULA ---
+        window.crearCapsula = async () => {
+            const { value: formValues } = await Swal.fire({
+                title: 'Nueva Cápsula',
+                background: '#1a0525',
+                color: '#fff',
+                html:
+                    '<input id="cap-titulo" class="swal2-input" placeholder="Título (ej: Para nuestro cumple)">' +
+                    '<textarea id="cap-mensaje" class="swal2-textarea" placeholder="Escribe el mensaje secreto..."></textarea>' +
+                    '<p style="margin-bottom:0">¿Cuándo se podrá abrir?</p>' +
+                    '<input type="date" id="cap-fecha" class="swal2-input">',
+                preConfirm: () => {
+                    return {
+                        titulo: document.getElementById('cap-titulo').value,
+                        mensaje: document.getElementById('cap-mensaje').value,
+                        fecha: document.getElementById('cap-fecha').value
+                    }
+                }
+            });
+
+            if (formValues && formValues.titulo && formValues.mensaje && formValues.fecha) {
+                const fechaMeta = new Date(formValues.fecha).getTime() + (1000 * 60 * 60 * 24); // Ajuste a fin de día
+                await addDoc(collection(db, "capsulas"), {
+                    titulo: formValues.titulo,
+                    mensaje: formValues.mensaje,
+                    fechaMeta: fechaMeta,
+                    autor: currentProfile,
+                    creado: Date.now()
+                });
+                Swal.fire('¡Lanzada!', 'La cápsula ha sido enviada al futuro.', 'success');
+            }
+        };
+
+        // --- ACCIONES ---
+        function abrirCapsula(titulo, mensaje, autor) {
+            Swal.fire({
+                title: titulo,
+                text: mensaje,
+                footer: `Escrito por: ${autor.toUpperCase()}`,
+                background: '#fdfcf0',
+                color: '#5d4037',
+                confirmButtonText: '¡Qué lindo!',
+                confirmButtonColor: '#ffca28'
+            });
+        }
+
+        function mostrarCuentaRegresiva(meta) {
+            const faltan = meta - Date.now();
+            const dias = Math.floor(faltan / (1000 * 60 * 60 * 24));
+            
+            Swal.fire({
+                icon: 'lock',
+                title: 'Aún no es tiempo...',
+                text: `Faltan aproximadamente ${dias} días para poder abrir esta cápsula. ¡Aguanta la curiosidad! ✨`,
+                background: '#1a0525',
+                color: '#fff',
+                confirmButtonColor: '#ffca28'
+            });
+        }
+    </script>
+</body>
+</html>

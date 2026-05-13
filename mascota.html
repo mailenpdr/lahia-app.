@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lalhia-Chi: Tamagotchi Mágico</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --p-accent: #ff4d6d;
+            --p-cafe: #5d4037;
+            --borde: 4px solid var(--p-cafe);
+            --sombra: 6px 6px 0px var(--p-cafe);
+        }
+
+        body { 
+            background-color: #fffcfc;
+            background-image: radial-gradient(#ffd4dd 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            font-family: 'VT323', monospace;
+            margin: 0; overflow: hidden; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        /* --- CONSOLA --- */
+        .console-frame {
+            background: white; border: var(--borde); box-shadow: var(--sombra);
+            width: 90%; max-width: 350px; height: 75vh; margin-top: 20px;
+            display: flex; flex-direction: column; position: relative;
+            animation: bounceIn 0.8s ease;
+        }
+
+        #stage { 
+            background: #fdf2f4; border: 3px dashed var(--p-cafe);
+            margin: 15px; flex-grow: 1; position: relative; overflow: hidden;
+        }
+
+        /* --- GATITO Y ANIMACIONES --- */
+        #petContainer {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 150px; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pet-avatar { 
+            width: 100%; height: 100%; object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        .jump { animation: jumpAnim 0.5s ease; }
+        @keyframes jumpAnim {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-30px) scale(1.1); }
+        }
+
+        /* --- OBJETOS --- */
+        .items-side {
+            position: absolute; right: 10px; top: 50px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .drag-item {
+            font-size: 2.5rem; cursor: grab; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
+            transition: 0.2s;
+        }
+        .drag-item:hover { transform: scale(1.2) rotate(10deg); }
+
+        /* --- UI --- */
+        .status-bar { padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--borde); }
+        .energy-cont { background: #eee; border: 2px solid var(--p-cafe); width: 120px; height: 15px; position: relative; }
+        #fill { background: var(--p-accent); height: 100%; width: 100%; transition: 0.5s; }
+
+        /* --- MENÚ INFERIOR (ESTILO DASHBOARD) --- */
+        .nav-menu {
+            position: fixed; bottom: 15px; width: 90%; max-width: 350px;
+            height: 70px; background: white; border: var(--borde);
+            box-shadow: var(--sombra); display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-item { text-decoration: none; text-align: center; color: var(--p-cafe); }
+        .nav-item img { width: 25px; display: block; margin: 0 auto; }
+        .nav-item span { font-size: 0.8rem; font-weight: bold; }
+
+        /* Globito */
+        .bubble {
+            background: white; border: 2px solid var(--p-cafe); padding: 5px 10px;
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            display: none; white-space: nowrap; z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="console-frame">
+        <div class="status-bar">
+            <span>LVL: <span id="lvl">1</span></span>
+            <div class="energy-cont"><div id="fill"></div></div>
+            <button onclick="ayuda()" style="cursor:pointer; border:2px solid var(--p-cafe); background:white;">?</button>
+        </div>
+
+        <div id="stage">
+            <div class="items-side">
+                <div class="drag-item" draggable="true" id="fish" ondragstart="start(event)">🐟</div>
+                <div class="drag-item" draggable="true" id="water" ondragstart="start(event)">💧</div>
+                <div class="drag-item" draggable="true" id="candy" ondragstart="start(event)">🍬</div>
+            </div>
+
+            <div id="petContainer" ondrop="end(event)" ondragover="over(event)" onclick="tocar()">
+                <div id="bubble" class="bubble"></div>
+                <img id="petImg" class="pet-avatar" src="gato1.png">
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="dashboard.html" class="nav-item">🏠<br><span>INICIO</span></a>
+        <a href="mood.html" class="nav-item">🌈<br><span>MOOD</span></a>
+        <a href="ajustes.html" class="nav-item">⚙️<br><span>AJUSTES</span></a>
+    </nav>
+
+    <script>
+        const pet = document.getElementById('petImg');
+        const container = document.getElementById('petContainer');
+        const fill = document.getElementById('fill');
+        const bub = document.getElementById('bubble');
+        
+        let energia = 100;
+        let nivel = 1;
+
+        // --- LÓGICA DE IMÁGENES ---
+        // gato1: triste | gato2: dormido | gato3: comiendo | gato4-7: felices
+
+        function actualizarGato(num) {
+            pet.src = `gato${num}.png`;
+        }
+
+        // Sistema de hambre
+        setInterval(() => {
+            if (energia > 0) {
+                energia -= 2;
+                fill.style.width = energia + "%";
+                if (energia < 20) actualizarGato(1); // Se pone triste
+            }
+        }, 5000);
+
+        // --- INTERACCIONES ---
+        function tocar() {
+            container.classList.add('jump');
+            setTimeout(() => container.classList.remove('jump'), 500);
+            
+            // Si lo tocas y tiene energía, se pone feliz aleatorio (4 al 7)
+            if (energia > 20) {
+                const feliz = Math.floor(Math.random() * (7 - 4 + 1)) + 4;
+                actualizarGato(feliz);
+                hablar("¡Miau! ❤️");
+            } else {
+                hablar("Tengo hambre... 😿");
+            }
+        }
+
+        function start(e) { e.dataTransfer.setData("id", e.target.id); }
+        function over(e) { e.preventDefault(); }
+        
+        function end(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("id");
+            actualizarGato(3); // Gato comiendo
+            
+            energia = Math.min(energia + 20, 100);
+            fill.style.width = energia + "%";
+            
+            hablar("¡Ñam ñam! ✨");
+            setTimeout(() => {
+                if (energia > 80) actualizarGato(2); // Se duerme de lo lleno
+                else actualizarGato(4);
+            }, 2000);
+        }
+
+        function hablar(txt) {
+            bub.innerText = txt;
+            bub.style.display = "block";
+            setTimeout(() => bub.style.display = "none", 2000);
+        }
+
+        function ayuda() {
+            Swal.fire({
+                title: '🐾 MANUAL GATUNO',
+                html: `<b>Gato 1:</b> Triste (poca energía)<br>
+                       <b>Gato 2:</b> Durmiendo (está lleno)<br>
+                       <b>Gato 3:</b> ¡Comiendo!<br>
+                       <b>Gatos 4-7:</b> ¡Súper felices!`,
+                confirmButtonColor: '#ff4d6d'
+            });
+        }
+    </script>
+</body>
+</html>

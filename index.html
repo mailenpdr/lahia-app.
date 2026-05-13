@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Cargando...</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --fresa: #ff85a2;
+            --fresa-light: #ffcad4;
+            --crema: #fffaff;
+            --cafe: #5d4037;
+            --borde: 4px solid var(--cafe);
+            --sombra: 6px 6px 0px var(--cafe);
+        }
+
+        body {
+            background-color: var(--crema);
+            background-image: radial-gradient(var(--fresa-light) 2px, transparent 2px);
+            background-size: 30px 30px;
+            margin: 0; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Quicksand', sans-serif;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .loader-box {
+            background: white; border: var(--borde);
+            box-shadow: var(--sombra); padding: 40px;
+            text-align: center; position: relative;
+            animation: float 3s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .pixel-heart {
+            font-family: 'VT323', monospace; font-size: 4rem;
+            color: var(--fresa); display: block; margin-bottom: 10px;
+            filter: drop-shadow(3px 3px 0px var(--cafe));
+            animation: pulse 1s infinite alternate;
+        }
+
+        .logo-pixel {
+            font-family: 'VT323', monospace; font-size: 3.5rem;
+            color: var(--fresa); text-shadow: 3px 3px 0px var(--cafe);
+            margin: 0; letter-spacing: 2px;
+        }
+
+        /* --- BARRA DE CARGA RPG --- */
+        .pixel-bar-container {
+            width: 200px; height: 25px; border: var(--borde);
+            background: white; margin: 25px auto;
+            position: relative; padding: 3px;
+            image-rendering: pixelated;
+        }
+
+        .pixel-bar-fill {
+            height: 100%; background: var(--fresa);
+            width: 0%; transition: width 0.2s ease-out;
+        }
+
+        .pixel-text {
+            font-family: 'VT323', monospace; font-size: 1.4rem;
+            color: var(--cafe); text-transform: uppercase;
+            min-height: 1.5em;
+        }
+
+        /* --- DECORACIONES --- */
+        .bow { position: absolute; font-size: 2.5rem; top: -25px; }
+        .bow-left { left: -15px; transform: rotate(-20deg); }
+        .bow-right { right: -15px; transform: rotate(20deg); }
+
+        .floating-pixel-heart {
+            position: absolute; bottom: -50px;
+            font-family: 'VT323', monospace; font-size: 2rem;
+            color: var(--fresa); opacity: 0.6;
+            animation: rise 4s infinite linear;
+            user-select: none;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes rise {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <div class="floating-pixel-heart" style="left: 10%; animation-delay: 0s;">♥</div>
+    <div class="floating-pixel-heart" style="left: 25%; animation-delay: 2s;">♡</div>
+    <div class="floating-pixel-heart" style="left: 70%; animation-delay: 1s;">♥</div>
+    <div class="floating-pixel-heart" style="left: 85%; animation-delay: 3s;">♡</div>
+
+    <div class="loader-box">
+        <span class="bow bow-left">🎀</span>
+        <span class="bow bow-right">🎀</span>
+        
+        <div class="pixel-heart">♥</div>
+        <h1 class="logo-pixel">LALHIA</h1>
+        
+        <div class="pixel-bar-container">
+            <div id="bar" class="pixel-bar-fill"></div>
+        </div>
+        
+        <p class="pixel-text" id="status-text">Cargando partida...</p>
+    </div>
+
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const bar = document.getElementById('bar');
+        const statusText = document.getElementById('status-text');
+        let progress = 0;
+
+        // 1. Simulación de carga pixelada
+        const interval = setInterval(() => {
+            progress += Math.random() * 12;
+            if (progress > 100) progress = 100;
+            
+            bar.style.width = progress + "%";
+            
+            // Textos dinámicos
+            if (progress < 30) statusText.innerText = "Cargando amor...";
+            else if (progress < 60) statusText.innerText = "Limpiando el mundo...";
+            else if (progress < 90) statusText.innerText = "Alistando besitos...";
+            else statusText.innerText = "¡LISTO!";
+
+            if (progress === 100) {
+                clearInterval(interval);
+                verificarSesion();
+            }
+        }, 250);
+
+        // 2. Lógica de redirección ESTRICTA
+        function verificarSesion() {
+            // Ponemos un temporizador de seguridad por si Firebase tarda mucho
+            const timeoutSeguridad = setTimeout(() => {
+                console.warn("Firebase tardó demasiado. Redirigiendo por LocalStorage...");
+                decidirRuta(null);
+            }, 4000);
+
+            onAuthStateChanged(auth, (user) => {
+                clearTimeout(timeoutSeguridad);
+                decidirRuta(user);
+            });
+        }
+
+        function decidirRuta(user) {
+            const usuarioLocal = localStorage.getItem('usuarioActual');
+
+            if (user && usuarioLocal) {
+                // SESIÓN OK: Al Dashboard
+                window.location.replace("dashboard.html");
+            } else {
+                // SESIÓN INVÁLIDA O CUENTA BORRADA: Limpiar todo y al login
+                localStorage.clear();
+                window.location.replace("login.html");
+            }
+        }
+    </script>
+</body>
+</html>

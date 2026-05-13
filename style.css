@@ -1,0 +1,137 @@
+/* LALHIA - PIXEL COQUETTE STYLE - OFFICIAL CSS */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Quicksand:wght@500;700&display=swap');
+
+:root {
+    /* Paleta de Colores */
+    --fresa: #ff4d6d;        /* Rosa fuerte */
+    --fresa-claro: #ff85a1;
+    --pastel: #fbb1bd;      /* Rosa pastel */
+    --crema: #fff0f3;       /* Fondo */
+    --cafe: #5c3d45;        /* Bordes y texto principal */
+    --blanco: #ffffff;
+    
+    /* Estilo de Bordes Pixel */
+    --pixel-border: 4px solid var(--cafe);
+    --pixel-shadow: 5px 5px 0px var(--cafe);
+    --pixel-shadow-active: 0px 0px 0px var(--cafe);
+}
+
+/* --- RESET Y BASE --- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    background-color: var(--crema);
+    background-image: radial-gradient(#ffcad4 2px, transparent 2px);
+    background-size: 25px 25px; /* Fondo de puntitos retro */
+    color: var(--cafe);
+    margin: 0;
+    min-height: 100vh;
+    image-rendering: pixelated; 
+}
+
+/* --- TARJETAS (LOGIN, REGISTRO, DASHBOARD) --- */
+.login-card, .registration-card, .register-card, .player-stats, .item-card, .note-card, .write-note-section {
+    background: var(--blanco);
+    border: var(--pixel-border) !important; /* Forzamos el borde café */
+    box-shadow: var(--pixel-shadow) !important;
+    border-radius: 0px; /* Estilo píxel puro */
+}
+
+/* --- TIPOGRAFÍA --- */
+h1, .pixel-title {
+    font-family: 'VT323', monospace;
+    font-size: 3.5rem;
+    color: var(--fresa);
+    text-shadow: 3px 3px 0px var(--cafe);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+h2, .item-label, .player-name, .nav-item {
+    font-family: 'VT323', monospace;
+}
+
+/* --- FORMULARIOS (INPUTS Y SELECTS) --- */
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: var(--pixel-border);
+    font-family: 'VT323', monospace;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    outline: none;
+    background: var(--blanco);
+    color: var(--cafe);
+    transition: 0.2s;
+}
+
+input:focus, textarea:focus {
+    background: var(--crema);
+    transform: translateY(-2px);
+}
+
+/* --- BOTONES ESTILO PIXEL --- */
+.btn-stellar, .btn-register, .btn-start, .btn-send {
+    background: var(--fresa);
+    color: var(--blanco);
+    border: var(--pixel-border);
+    box-shadow: var(--pixel-shadow);
+    font-family: 'VT323', monospace;
+    font-size: 1.8rem;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.1s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-stellar:active, .btn-register:active, .btn-start:active, .btn-send:active, .item-card:active {
+    box-shadow: var(--pixel-shadow-active) !important;
+    transform: translate(4px, 4px) !important;
+}
+
+/* --- SELECCIÓN DE AVATAR --- */
+.avatar-frame {
+    border: var(--pixel-border);
+    background: var(--crema);
+    image-rendering: pixelated;
+    transition: 0.3s;
+}
+
+input:checked + .avatar-frame {
+    background: var(--fresa);
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0px 8px 0px var(--cafe);
+}
+
+/* --- NAVEGACIÓN PIXEL --- */
+.pixel-nav {
+    background: var(--blanco);
+    border-top: var(--pixel-border);
+}
+
+.nav-item.active {
+    color: var(--fresa);
+    opacity: 1;
+}
+
+/* --- ANIMACIONES --- */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+}
+
+.floating {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* --- AJUSTES PARA NOTAS --- */
+.note-card {
+    margin-bottom: 10px;
+}
+
+.note-mahia { border-color: var(--cafe); background: var(--blanco); }
+.note-lalo { border-color: var(--cafe); background: #e3f2fd; }

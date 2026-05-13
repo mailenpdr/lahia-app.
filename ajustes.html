@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalhia - Panel de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --fresa: #ffb3c1;
+            --fresa-fuerte: #ff4d6d;
+            --cafe: #5d4037;
+            --crema: #fffaff;
+            --oro: #ffca28;
+        }
+
+        body {
+            background-color: var(--crema);
+            font-family: 'VT323', monospace;
+            margin: 0; padding-bottom: 120px;
+            color: var(--cafe);
+            text-align: center;
+        }
+
+        .header-ajustes {
+            padding: 30px;
+            background: white;
+            border-bottom: 5px solid var(--cafe);
+        }
+
+        /* --- TARJETA DE PERFIL --- */
+        .profile-card {
+            background: white;
+            border: 4px solid var(--cafe);
+            margin: 20px auto;
+            width: 90%; max-width: 350px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 8px 8px 0 var(--fresa);
+        }
+
+        .avatar-frame { position: relative; width: 100px; margin: 0 auto; }
+        .avatar {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--cafe);
+            background: white;
+        }
+
+        /* --- GRID DE ESTADÍSTICAS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 179, 193, 0.2);
+            border: 2px solid var(--cafe);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-box b { display: block; font-size: 1.5rem; color: var(--fresa-fuerte); }
+        .stat-box span { font-size: 0.9rem; text-transform: uppercase; }
+
+        .mascota-status {
+            grid-column: span 2;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        /* --- ACCIONES --- */
+        .actions-list {
+            max-width: 350px; margin: 20px auto;
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 0 20px;
+        }
+
+        .btn-logout {
+            background: #ff4444; color: white;
+            border: 3px solid var(--cafe);
+            padding: 15px; font-family: 'VT323';
+            font-size: 1.4rem; border-radius: 10px;
+            cursor: pointer; box-shadow: 4px 4px 0px #880000;
+        }
+
+        .pixel-nav {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 85%;
+            max-width: 400px; background: white;
+            border: 4px solid var(--cafe);
+            display: flex; justify-content: space-around;
+            padding: 12px 0; box-shadow: 6px 6px 0px var(--cafe);
+        }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ajustes">
+        <h1 style="margin:0;">PERFIL Y LOGROS</h1>
+    </div>
+
+    <div class="profile-card">
+        <div class="avatar-frame">
+            <img id="user-img" src="" class="avatar">
+        </div>
+        <h2 id="user-display" style="margin:10px 0 5px;">CARGANDO...</h2>
+        <p id="join-date" style="margin:0; font-size: 1rem; opacity: 0.7;">Iniciaste: --/--/----</p>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <b id="st-notas">0</b>
+                <span>Notas</span>
+            </div>
+            <div class="stat-box">
+                <b id="st-cartas">0</b>
+                <span>Cartas</span>
+            </div>
+            <div class="stat-box">
+                <b id="st-dodge">0</b>
+                <span>Récord Dodge</span>
+            </div>
+            <div class="stat-box">
+                <b id="st-moods">0</b>
+                <span>Moods</span>
+            </div>
+            <div class="mascota-status">
+                <span>Mascota:</span> <b id="st-mascota" style="display:inline; color:#2196f3;">Feliz ✨</b>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-list">
+        <button class="btn-logout" onclick="cerrarSesion()">CERRAR SESIÓN 🔒</button>
+    </div>
+
+    <nav class="pixel-nav">
+        <a href="dashboard.html">🏠 INICIO</a>
+        <a href="mood.html">🌈 MOOD</a>
+        <a href="ajustes.html" style="color:var(--fresa-fuerte); font-weight: bold;">⚙️ AJUSTES</a>
+    </nav>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const user = localStorage.getItem('usuarioActual') || 'Invitado';
+        const userKey = user.toLowerCase();
+        
+        // --- 1. GESTIÓN DE FECHA REAL ---
+        // Si no existe fecha de inicio para este usuario, la crea hoy
+        if (!localStorage.getItem(`fechaInicio_${userKey}`)) {
+            const hoy = new Date().toLocaleDateString();
+            localStorage.setItem(`fechaInicio_${userKey}`, hoy);
+        }
+        document.getElementById('join-date').innerText = `Iniciaste: ${localStorage.getItem(`fechaInicio_${userKey}`)}`;
+
+        // --- 2. CARGAR PERFIL ---
+        document.getElementById('user-display').innerText = user.toUpperCase();
+        document.getElementById('user-img').src = userKey === 'lalo' ? 'laliroperfil.png' : 'mahitaperfil.png';
+
+        // --- 3. CARGAR ESTADÍSTICAS REALES ---
+        async function cargarStats() {
+            // Notas y Cartas (Globales)
+            const nSnap = await getDocs(collection(db, "notas"));
+            const cSnap = await getDocs(collection(db, "cartas"));
+            document.getElementById('st-notas').innerText = nSnap.size;
+            document.getElementById('st-cartas').innerText = cSnap.size;
+
+            // Moods (Personales)
+            const mSnap = await getDocs(collection(db, `moods_${userKey === 'lalo' ? 'lalo' : 'mia'}`));
+            document.getElementById('st-moods').innerText = mSnap.size;
+
+            // Récord del Juego (Local)
+            const record = localStorage.getItem(`record_dodge_${userKey}`) || 0;
+            document.getElementById('st-dodge').innerText = record;
+
+            // Estado Mascota (basado en el hambre guardada)
+            const hambre = localStorage.getItem('hambre_mascota') || 100;
+            const statusMascota = document.getElementById('st-mascota');
+            if(hambre > 70) statusMascota.innerText = "Súper Feliz ✨";
+            else if(hambre > 30) statusMascota.innerText = "Tiene hambre 🍎";
+            else statusMascota.innerText = "Durmiendo... 😴";
+        }
+
+        // --- 4. CERRAR SESIÓN ---
+        window.cerrarSesion = () => {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4444',
+                confirmButtonText: 'Sí, salir'
+            }).then((r) => {
+                if(r.isConfirmed) {
+                    localStorage.removeItem('usuarioActual');
+                    window.location.href = 'index.html';
+                }
+            });
+        };
+
+        cargarStats();
+    </script>
+</body>
+</html>

@@ -20,93 +20,58 @@
             margin: 0; padding-bottom: 120px;
             color: var(--cafe);
             text-align: center;
-            touch-action: manipulation;
+            overflow-x: hidden;
+            /* Evita que el cel intente recargar la página al deslizar hacia abajo */
+            overscroll-behavior-y: contain;
         }
 
-        .header-mood {
-            padding: 20px;
-            background: white;
-            border-bottom: 5px solid var(--fresa);
-        }
-
+        .header-mood { padding: 15px; background: white; border-bottom: 5px solid var(--fresa); }
+        
         #user-indicator {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 5px 15px;
-            background: var(--fresa);
-            border-radius: 20px;
-            color: white;
-            font-size: 1.2rem;
+            display: inline-block; margin-top: 5px; padding: 5px 15px;
+            background: var(--fresa); border-radius: 20px; color: white; font-size: 1.2rem;
         }
 
         .jars-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px;
+            display: flex; justify-content: center; gap: 15px; padding: 15px;
         }
-
-        .jar-wrapper { display: flex; flex-direction: column; align-items: center; }
 
         .jar {
-            width: 140px;
-            height: 200px;
-            border: 4px solid var(--cafe);
-            border-radius: 15px 15px 45% 45%;
-            background: rgba(255, 255, 255, 0.7);
-            position: relative;
-            display: flex;
-            flex-wrap: wrap-reverse;
-            align-content: flex-start;
-            padding: 15px;
-            gap: 6px;
-            box-shadow: inset 8px 0 15px rgba(255,255,255,0.8);
+            width: 130px; height: 180px; border: 4px solid var(--cafe);
+            border-radius: 15px 15px 40% 40%; background: rgba(255, 255, 255, 0.8);
+            position: relative; display: flex; flex-wrap: wrap-reverse;
+            align-content: flex-start; padding: 10px; gap: 5px;
+            box-shadow: inset 5px 0 10px rgba(0,0,0,0.05);
+            transition: background 0.3s;
         }
 
-        /* Efecto de brillo al arrastrar sobre el frasco */
-        .jar.drag-over {
-            background: rgba(255, 179, 193, 0.3);
-            border-style: dashed;
-        }
-
+        .jar.drag-over { background: #ffe3e8; border-style: dashed; }
         .jar-label { 
-            margin-top: 10px; 
-            font-size: 1.5rem; 
-            background: var(--cafe); 
-            color: white; 
-            padding: 2px 15px; 
-            border-radius: 5px;
+            margin-top: 8px; font-size: 1.3rem; background: var(--cafe); 
+            color: white; padding: 2px 12px; border-radius: 5px;
         }
 
         .mood-bank {
-            background: white;
-            margin: 15px auto;
-            max-width: 400px;
-            padding: 15px;
-            border: 3px solid var(--cafe);
-            box-shadow: 6px 6px 0px var(--fresa);
-            border-radius: 10px;
+            background: white; margin: 10px auto; width: 90%;
+            padding: 15px; border: 3px solid var(--cafe);
+            box-shadow: 6px 6px 0px var(--fresa); border-radius: 10px;
         }
 
         .bank-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 12px; margin-top: 10px;
         }
 
-        .ball-item { display: flex; flex-direction: column; align-items: center; font-size: 0.9rem; }
+        .ball-item { display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
 
         .mood-ball {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            width: 35px; height: 35px; border-radius: 50%;
             border: 2px solid rgba(0,0,0,0.1);
-            cursor: grab;
-            transition: transform 0.2s;
+            touch-action: none; /* CRITICO PARA CELULARES */
+            position: relative; z-index: 10;
         }
 
-        /* Colores */
+        /* COLORES DE EMOCIONES */
         .m-feliz { background: #ffeb3b; }
         .m-amor { background: #ff4081; }
         .m-extraño { background: #9c27b0; }
@@ -114,16 +79,16 @@
         .m-hablar { background: #4caf50; }
         .m-verte { background: #ff9800; }
         .m-triste { background: #2196f3; }
+        .m-textraño { background: #f06292; } /* Rosa suave */
+        .m-enojo { background: #f44336; }    /* Rojo */
+        .m-ansiedad { background: #8d6e63; } /* Café grisáceo */
+        .m-aburrido { background: #9e9e9e; } /* Gris */
 
         .btn-clear {
-            background: var(--fresa-fuerte);
-            color: white;
-            border: 3px solid var(--cafe);
-            padding: 10px 20px;
-            font-family: 'VT323';
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px var(--cafe);
+            background: var(--fresa-fuerte); color: white;
+            border: 3px solid var(--cafe); padding: 12px;
+            font-family: 'VT323'; font-size: 1.2rem;
+            width: 80%; margin-top: 10px; box-shadow: 4px 4px 0px var(--cafe);
         }
 
         .pixel-nav {
@@ -131,15 +96,15 @@
             transform: translateX(-50%); width: 85%;
             background: white; border: 4px solid var(--cafe);
             display: flex; justify-content: space-around;
-            padding: 10px 0; box-shadow: 6px 6px 0px var(--cafe);
+            padding: 10px 0; box-shadow: 6px 6px 0px var(--cafe); z-index: 100;
         }
-        .pixel-nav a { text-decoration: none; color: var(--cafe); }
+        .pixel-nav a { text-decoration: none; color: var(--cafe); font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div class="header-mood">
-        <h1>FRASCOS DE SENTIMIENTOS</h1>
+        <h1>MIS SENTIMIENTOS</h1>
         <span id="user-indicator">Cargando...</span>
     </div>
 
@@ -155,19 +120,20 @@
     </div>
 
     <div class="mood-bank">
-        <span>Arrastra tu sentimiento al frasco:</span>
+        <span>Toca y arrastra al frasco:</span>
         <div class="bank-grid">
-            <div class="ball-item"><div class="mood-ball m-feliz" draggable="true" id="feliz"></div><span>Feliz</span></div>
-            <div class="ball-item"><div class="mood-ball m-amor" draggable="true" id="amor"></div><span>Amor</span></div>
-            <div class="ball-item"><div class="mood-ball m-extraño" draggable="true" id="extraño"></div><span>Extraño</span></div>
-            <div class="ball-item"><div class="mood-ball m-verte" draggable="true" id="verte"></div><span>Verte</span></div>
-            <div class="ball-item"><div class="mood-ball m-hablar" draggable="true" id="hablar"></div><span>Hablar</span></div>
-            <div class="ball-item"><div class="mood-ball m-cansado" draggable="true" id="cansado"></div><span>Cansado</span></div>
-            <div class="ball-item"><div class="mood-ball m-triste" draggable="true" id="triste"></div><span>Triste</span></div>
+            <div class="ball-item"><div class="mood-ball m-feliz" id="feliz"></div><span>Feliz</span></div>
+            <div class="ball-item"><div class="mood-ball m-amor" id="amor"></div><span>Amor</span></div>
+            <div class="ball-item"><div class="mood-ball m-textraño" id="textraño"></div><span>Extraño</span></div>
+            <div class="ball-item"><div class="mood-ball m-verte" id="verte"></div><span>Verte</span></div>
+            <div class="ball-item"><div class="mood-ball m-hablar" id="hablar"></div><span>Hablar</span></div>
+            <div class="ball-item"><div class="mood-ball m-triste" id="triste"></div><span>Triste</span></div>
+            <div class="ball-item"><div class="mood-ball m-enojo" id="enojo"></div><span>Enfado</span></div>
+            <div class="ball-item"><div class="mood-ball m-ansiedad" id="ansiedad"></div><span>Ansia</span></div>
         </div>
     </div>
 
-    <button class="btn-clear" onclick="confirmarLimpieza()">LIMPIAR MI FRASCO ✨</button>
+    <button class="btn-clear" onclick="confirmarLimpieza()">VACIAR MI FRASCO ✨</button>
 
     <nav class="pixel-nav">
         <a href="dashboard.html">🏠 INICIO</a>
@@ -179,62 +145,61 @@
         import { db } from './firebase-config.js';
         import { doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- SISTEMA DE IDENTIFICACIÓN CORREGIDO ---
         const userRaw = localStorage.getItem('usuarioActual') || 'invitado';
-        // Normalizamos: Si es "Mahia" o "Mia", lo tratamos como "mia"
         const currentProfile = userRaw.toLowerCase().includes('mahia') || userRaw.toLowerCase() === 'mia' ? 'mia' : 'lalo';
-        
         document.getElementById('user-indicator').innerText = `PERFIL: ${currentProfile === 'mia' ? 'MAHIA' : 'LALO'}`;
 
-        // --- LÓGICA DE ARRASTRE MEJORADA ---
+        // --- LÓGICA TOUCH PARA CELULARES ---
         const balls = document.querySelectorAll('.mood-ball');
-        const jars = document.querySelectorAll('.jar');
+        let activeBall = null;
+        let startX, startY;
 
         balls.forEach(ball => {
-            ball.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData("mood", e.target.id);
-            });
-        });
+            ball.addEventListener('touchstart', (e) => {
+                activeBall = e.target;
+                const touch = e.touches[0];
+                startX = touch.clientX - activeBall.offsetLeft;
+                startY = touch.clientY - activeBall.offsetTop;
+                activeBall.style.position = 'fixed';
+                activeBall.style.zIndex = '1000';
+            }, {passive: false});
 
-        jars.forEach(jar => {
-            jar.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                jar.classList.add('drag-over');
-            });
+            ball.addEventListener('touchmove', (e) => {
+                if (!activeBall) return;
+                e.preventDefault(); // Evita scroll
+                const touch = e.touches[0];
+                activeBall.style.left = (touch.clientX - 20) + 'px';
+                activeBall.style.top = (touch.clientY - 20) + 'px';
+            }, {passive: false});
 
-            jar.addEventListener('dragleave', () => {
-                jar.classList.remove('drag-over');
-            });
-
-            jar.addEventListener('drop', async (e) => {
-                e.preventDefault();
-                jar.classList.remove('drag-over');
+            ball.addEventListener('touchend', async (e) => {
+                if (!activeBall) return;
                 
-                const moodType = e.dataTransfer.getData("mood");
-                const targetId = jar.id; // "jar-lalo" o "jar-mia"
+                const touch = e.changedTouches[0];
+                const targetJar = document.elementFromPoint(touch.clientX, touch.clientY);
+                const jarId = targetJar?.closest('.jar')?.id;
 
-                // VALIDACIÓN CORREGIDA
-                if (targetId !== `jar-${currentProfile}`) {
-                    Swal.fire({
-                        title: '¡ALTO AHÍ!',
-                        text: 'Ese no es tu frasco. Pon tus sentimientos en el tuyo ❤️',
-                        icon: 'error',
-                        confirmButtonColor: '#ff4d6d'
-                    });
-                    return;
-                }
-
-                if(moodType) {
+                if (jarId === `jar-${currentProfile}`) {
+                    const moodType = activeBall.id;
                     const moodId = Date.now().toString();
                     await setDoc(doc(db, `moods_${currentProfile}`, moodId), {
                         type: moodType,
                         timestamp: Date.now()
                     });
+                } else if (jarId && jarId.startsWith('jar-')) {
+                    Swal.fire({ title: '¡ERROR!', text: '¡Ese es el frasco del otro! 😡', icon: 'error' });
                 }
+
+                // Resetear bolita a su lugar original
+                activeBall.style.position = 'relative';
+                activeBall.style.left = '0px';
+                activeBall.style.top = '0px';
+                activeBall.style.zIndex = '10';
+                activeBall = null;
             });
         });
 
-        // --- RENDERIZADO ---
+        // --- RENDERIZADO DESDE FIREBASE ---
         function cargarFrasco(perfil) {
             onSnapshot(collection(db, `moods_${perfil}`), (snapshot) => {
                 const jar = document.getElementById(`jar-${perfil}`);
@@ -243,6 +208,7 @@
                     const data = doc.data();
                     const ball = document.createElement('div');
                     ball.className = `mood-ball m-${data.type}`;
+                    ball.style.width = '25px'; ball.style.height = '25px';
                     jar.appendChild(ball);
                 });
             });
@@ -250,17 +216,17 @@
 
         window.confirmarLimpieza = () => {
             Swal.fire({
-                title: '¿Limpiar frasco?',
-                text: "Se borrarán tus bolitas.",
+                title: '¿Vaciar frasco?',
+                text: "Se borrarán todos tus sentimientos de la pantalla.",
                 icon: 'warning',
                 showCancelButton: true,
+                confirmButtonColor: '#ff4d6d',
                 confirmButtonText: 'Sí, vaciar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     const snap = await getDocs(collection(db, `moods_${currentProfile}`));
                     const p = snap.docs.map(d => deleteDoc(doc(db, `moods_${currentProfile}`, d.id)));
                     await Promise.all(p);
-                    Swal.fire('¡Listo!', 'Frasco vacío', 'success');
                 }
             });
         };
